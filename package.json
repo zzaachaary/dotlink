@@ -1,0 +1,33 @@
+{
+  "name": "dotlink",
+  "version": "0.1.0-beta.1",
+  "description": "A self-hosted, single-user iPhone bridge for MCP tools and events.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "dev": "node scripts/wrangler.mjs dev --ip 127.0.0.1",
+    "check": "node scripts/check-build.mjs",
+    "check:release": "node scripts/check-release.mjs",
+    "deploy": "node scripts/wrangler.mjs deploy",
+    "test:runtime": "node --test test/runtime/*.test.mjs"
+  },
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "1.2.1"
+  },
+  "devDependencies": {
+    "wrangler": "4.144.0"
+  },
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zzaachaary/dotlink.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zzaachaary/dotlink/issues"
+  },
+  "homepage": "https://github.com/zzaachaary/dotlink#readme",
+  "engines": {
+    "node": ">=24 <25"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "v": 1,
+  "event_id": "00000000-0000-4000-8000-000000000001",
+  "device_id": "iphone-primary",
+  "kind": "notification",
+  "occurred_at": "2026-10-02T00:00:00Z",
+  "payload": {
+    "app": "Example App",
+    "title": "Synthetic notification",
+    "body": "This is fictional test content."
+  }
+}

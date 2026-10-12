@@ -1,0 +1,10 @@
+# Secret names only; empty values cannot authenticate or enable ingestion.
+# 仅列出 Secret 名称；空值不能完成认证或开启上传。
+# Configure real values in your Worker's Settings > Variables and Secrets.
+# 在自己的 Worker 设置 > 变量和机密中填写实际值，不要提交凭据。
+# The setup page creates BRIDGE_SEAL_KEY and DEVICE_REGISTRY locally in your browser.
+# 设置页在浏览器本地生成 BRIDGE_SEAL_KEY 和 DEVICE_REGISTRY。
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+BRIDGE_SEAL_KEY=
+DEVICE_REGISTRY=

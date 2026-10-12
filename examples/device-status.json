@@ -1,0 +1,12 @@
+{
+  "v": 1,
+  "event_id": "00000000-0000-4000-8000-000000000002",
+  "device_id": "iphone-primary",
+  "kind": "device_status",
+  "occurred_at": "2026-10-02T00:00:00Z",
+  "payload": {
+    "battery_percent": 50,
+    "is_charging": false,
+    "measured_at": "2026-10-02T00:00:00Z"
+  }
+}

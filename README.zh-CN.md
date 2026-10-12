@@ -1,0 +1,99 @@
+# DotLink
+
+[English](README.md) | [简体中文](README.zh-CN.md)
+
+通过 iPhone 系统快捷指令和自己部署的 Cloudflare Bridge，将选定 App 的新通知、充电变化与专注模式变化交给自己的 ChatGPT dot。
+
+**实验性 Beta `0.1.0-beta.1`。** 四份脱敏 Apple 签名模板见[首个 Beta 发布页](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)。Charging 已完成一轮真实 iPhone → Bridge → dot 闭环；通知与 Focus 沿用已有个人 Bridge 的事件协议，尚未完成的手机检查列在[验证记录](docs/zh-CN/validation-record.md)。本项目以 PolyForm Noncommercial 1.0.0 提供源码，由你自行部署，安装需要自己的账号和手工手机配置。
+
+DotLink 面向一个所有者及其登记设备。历史手机测试使用 iOS 27，只覆盖选定来源。项目与 Apple、Cloudflare、GitHub、OpenAI 没有官方隶属或背书关系。
+
+## 下载模板
+
+| 模块 | 签名快捷指令 |
+| --- | --- |
+| 通知 | [DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Notifications.shortcut) |
+| 充电 | [DotLink-Charging.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Charging.shortcut) |
+| 专注开启 | [DotLink-Focus-On.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Focus-On.shortcut) |
+| 专注关闭 | [DotLink-Focus-Off.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Focus-Off.shortcut) |
+
+[SHA-256 校验文件](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/SHA256SUMS) · [导入说明](docs/zh-CN/iphone-shortcuts.md)。填写自己的地址／令牌，绑定手机触发器之后再开启 Automation。
+
+## 能力与边界
+
+| 能力 | 当前证据与限制 |
+| --- | --- |
+| 选定 App 通知 | 历史测试中，部分微信、抖音、电话和邮件通知进入了原个人 dot；只传 iOS 实际提供的字段。 |
+| 充电与电量 | 锁屏插入／拔出充电器时上报测得的电量和充电状态；不是连续电量监控。 |
+| 专注模式 | 三个选定模式的开启／关闭曾通过历史验证；记录名称、状态和时间，不控制手机。 |
+| 查询与推送 | OAuth 保护的 MCP 工具、事件订阅、签名回调及云端有限重试。 |
+| 其他协议字段 | 位置、连接、App 活动、省电和健康字段存在，不代表 iPhone 已启用或验证对应采集。 |
+| 离线与恢复 | 没有手机持久 outbox，上传失败可能漏事件；不支持游标重放；真实跨日续期仍待验证。 |
+| 覆盖范围 | 不保证全部 App、未来新 App 自动加入、历史聊天读取，或完整 SMS／iMessage／附件采集。 |
+
+历史真机结果截至 2026-10-01，整理于 2026-10-02，不是当前候选版的复测结果。详见[验证说明](docs/zh-CN/verification.md)和[验证记录](docs/zh-CN/validation-record.md)。
+
+## 用自己的账号安装
+
+需要具备所用 iOS 27 快捷指令触发器的 iPhone、自己的 Cloudflare 和 GitHub 账号，以及可以连接自定义 MCP 服务并订阅 MCP Events 的 ChatGPT dot 账号。普通模型 API 或只能调用 MCP 工具的客户端不等同于这项能力。
+
+Beta 设置流程以浏览器为主：
+
+1. 使用官方 Deploy to Cloudflare 流程，在**自己的 Cloudflare 账号**部署独立 Worker。
+2. 打开自己 Worker 的 `/setup`，选择 English 或简体中文。向导在浏览器本地通过 Web Crypto 生成全新的设备凭据和封装密钥。
+3. 本人到 Cloudflare 控制台填写变量与 Secrets，并创建自己的 GitHub OAuth App。向导不接收 Cloudflare API Token 或 GitHub Client Secret。
+4. 将自己的 dot 连接到 `/mcp`，完成所有者授权并建立 `phone.event` 订阅。
+5. 独立选择通知、充电、Focus 中需要的模块。下载[签名模板](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)，按[手机导入和触发器设置说明](docs/zh-CN/iphone-shortcuts.md)完成配置。
+6. 配置完成后再开启上传，验证无私人内容的合成事件和所选真实触发器，并核对目标 dot 的回执。
+
+[Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) 从本仓库开始部署。实际按钮流程和全新账号独立安装仍是此实验性 Beta 的后续检查项；已有个人实例运行成功不代表全部新安装已验证。
+
+默认使用 `workers.dev` 地址，无需购买域名。该地址和自定义域名都不保证大陆网络可达，也不改变平台服务范围。Cloudflare 和 ChatGPT 使用可能产生费用；不承诺永久免费或可用性 SLA。
+
+浏览器流程及保留的 CLI 恢复路径见[部署指南](docs/zh-CN/deployment.md)。`/setup` **仅用于全新部署**，不要用新生成的值覆盖既有 `BRIDGE_SEAL_KEY` 或 `DEVICE_REGISTRY`。
+
+## 工作原理
+
+```mermaid
+flowchart LR
+    A[选定 App 的新通知] --> C[iPhone 快捷指令]
+    B[充电或 Focus 变化] --> C
+    C -->|HTTPS + 设备上传令牌| D[Cloudflare Worker]
+    D --> E[SQLite Durable Object<br/>事件与待投递队列]
+    E -->|MCP Events 签名回调| F[个人 dot]
+    F -->|OAuth 查询与订阅| D
+```
+
+手机负责采集本人选择的事件；Bridge 负责鉴权、校验、持久化和投递。GitHub 在连接阶段确认所有者身份，不运输通知正文。日常上传不依赖 Mac 或 iPhone 镜像常开。
+
+上传 `202` 证明 Bridge 持久化接收；回调 `2xx` 证明接收端确认；匹配的 dot 回执证明该次事件被处理。这三个检查点需要分别确认。
+
+## 文档
+
+| 内容 | 指南 |
+| --- | --- |
+| 浏览器设置与高级部署 | [部署指南](docs/zh-CN/deployment.md) |
+| 可选手机模块与手工恢复 | [iPhone 快捷指令](docs/zh-CN/iphone-shortcuts.md) |
+| 数据流与权限 | [架构](docs/zh-CN/architecture.md) |
+| 第一版过程与历史边界 | [第一版实现](docs/zh-CN/first-version.md) |
+| 身份、网络、续期与交付 | [常见问题](docs/zh-CN/faq.md) |
+| JSON、工具、配额与过期 | [协议](docs/zh-CN/protocol.md) |
+| 验收与排查 | [验证说明](docs/zh-CN/verification.md) · [验证记录](docs/zh-CN/validation-record.md) |
+| 后续工作 | [路线图](docs/zh-CN/roadmap.md) |
+| 隐私与贡献 | [安全](SECURITY.zh-CN.md) · [参与贡献](CONTRIBUTING.zh-CN.md) |
+
+`src/` 为 Worker；`scripts/` 为本地配置工具；`test/` 使用合成数据；`examples/` 不含凭据。实际本地配置、`work/`、`.wrangler/`、数据库、截图、真实事件和个性化快捷指令导出都不应进入公开仓库。不要上传整个运行目录。
+
+本地开发使用 Node.js 24 与现有 npm 锁文件。安装依赖需要访问 npm；测试不会给真实 dot 发送事件：
+
+```sh
+npm ci --ignore-scripts --no-audit --no-fund
+npm test
+npm run test:runtime
+```
+
+## 许可证
+
+原创代码与文档采用 [PolyForm Noncommercial License 1.0.0](LICENSE)，以源码公开、非商业许可方式提供。超出许可授权范围的商业用途须另行取得相应权利人许可，具体以原文为准。原[必要版权声明](NOTICE)保持不变。
+
+依赖保留各自许可证，见[第三方说明](THIRD_PARTY_NOTICES.zh-CN.md)。项目许可不包含平台账号、个人数据、商标或第三方服务使用权。
