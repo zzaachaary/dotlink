@@ -13,6 +13,8 @@
 
 The dot may combine responses to several events. Absence of one chat bubble per event is not by itself a delivery failure; a server ACK is not proof of processing all content.
 
+In the current isolated cloud check, direct MCP queries matched five synthetic events by UUID and delivery counters reported five accepted callbacks, with no extra record for the duplicate retry. This establishes storage, query and receiver-acknowledgement evidence. It does not yet establish that the target dot processed those events or that iPhone system triggers ran; see the [dated validation record](validation-record.md).
+
 ## Historical first-version acceptance
 
 These results come from personal-device development records through 2026-10-01. Preparing public source did not retest the phone. Public material retains conclusions, not private screenshots, event IDs, contacts, bodies, or precise personal timelines.
@@ -45,7 +47,7 @@ These remaining checks are disclosed follow-ups for an experimental Beta, not co
 
 ## Minimum acceptance for a new installation
 
-1. Check `/health`, rejection of unauthorized `/mcp`, and ingestion still disabled. Confirm the Worker and GitHub owner belong to you.
+1. On a fresh unconfigured candidate, verify `/setup` is available and `/health`, OAuth, MCP and ingestion return `503`. Complete configuration through the [deployment guide](deployment.md), then require `/health` `200`, unauthorized `/mcp` rejection, and ingestion still disabled. Confirm the Worker and GitHub owner belong to you. Health `200` checks the minimum origin/owner configuration; it does not certify the presence or correctness of all Secrets.
 2. Complete OAuth in the target personal dot, subscribe to `phone.event`, and read `phone_bridge_status` for a valid deadline.
 3. Send a harmless synthetic event and verify upload, signed callback, and the target dot's response. A manual chat message to the dot is not an event-push test.
 4. Enable one selected notification automation. Receive a real test notification and compare event ID, source, and permitted fields; include lock-screen and background states.
@@ -66,10 +68,13 @@ Use synthetic markers to distinguish event occurrence, phone execution, bridge r
 | Date contains no time | ISO 8601 must contain date, time, and zone. |
 | Invalid JSON types | Native numbers/Booleans and a dictionary `payload`. |
 | 401/403 | Correct device token/ID; do not use a phone token to read; check OAuth owner and scopes. |
-| 503 | `ENABLE_INGEST`, device enabled state, and required configuration. |
+| 413/414/400 at OAuth endpoints | Request body, encoded query, or field bounds in the [protocol](protocol.md); correct the client request instead of increasing limits blindly. |
+| 429 at OAuth endpoints | Read `Retry-After` and wait for that route’s budget window; repeated reconnect attempts also consume admission allowance. |
+| 503 | Expected before bootstrap configuration; afterward check required configuration, `ENABLE_INGEST`, device enabled state, and the fixed OAuth guard error category if present. |
 | Bridge accepts but dot is silent | Subscription expiry, delivery status, revoked permissions, asynchronous processing; page retained history if needed. |
 | Missing old events after renewal | No cursor replay or automatic jobs for events received during a subscription gap. |
 | Authorization page cannot open | Browser, network, origin, and OAuth callback separately; do not guess a proxy cause or disable TLS verification. |
+| Consent POST fails or reports `ERR_BLOCKED_BY_CLIENT` | Inspect the actual POST Origin and Worker response. In the isolated test, `no-referrer` produced `Origin: null` and Worker `403`; the consent page’s `same-origin` policy fixed the browser flow. Keep null/cross-site Origin and cookie rejection. A separate `302` is still insufficient: verify the original client completes GitHub callback and shows the expected OAuth connection. |
 | Setup suggests new credentials on an existing Worker | Stop; `/setup` is for fresh deployments, not registry replacement or key rotation. |
 
 Synthetic source tests do not validate real routes, phone background behavior, GitHub login, or dot account eligibility.

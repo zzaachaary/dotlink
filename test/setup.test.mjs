@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { setupResponse } from '../src/setup.mjs';
-import { createCredentialSession, generateCredentials } from '../src/setup-client.mjs';
+import { SETUP_SCRIPT } from '../src/setup-client.mjs';
+import { setupBrowser } from './helpers/setup-browser.mjs';
 import { authenticateDevice, deviceRegistry } from '../src/access.mjs';
 import { seal, unseal } from '../src/subscriptions.mjs';
 
@@ -36,6 +37,7 @@ test('setup and its exact local assets work without any Worker configuration', a
 });
 
 test('generated credentials use separate 32-byte draws and match real server authentication and sealing', async () => {
+  const { generateCredentials } = setupBrowser(SETUP_SCRIPT, { exposeApi: true }).api;
   const calls = [];
   const cryptoApi = { subtle: crypto.subtle, getRandomValues(bytes) {
     calls.push(bytes.length); return crypto.getRandomValues(bytes);
@@ -55,7 +57,16 @@ test('generated credentials use separate 32-byte draws and match real server aut
   assert.deepEqual(await unseal(await seal(value, credentials.sealKey, 'test'), credentials.sealKey, 'test'), value);
 });
 
+test('setup points both languages to published templates and lists every excluded notification source', async () => {
+  const html = await setupResponse(new Request('https://fresh.example/setup')).text();
+  assert.match(html, /https:\/\/github.com\/zzaachaary\/dotlink\/releases\/tag\/v0\.1\.0-beta\.1/);
+  assert.doesNotMatch(html, /Importable templates are not available yet|暂未提供可导入模板/);
+  assert.match(html, /ChatGPT, Codex and Shortcuts/);
+  assert.match(html, /ChatGPT、Codex 和快捷指令/);
+});
+
 test('credential session starts empty, requires fresh-install confirmation and never silently rotates', async () => {
+  const { createCredentialSession } = setupBrowser(SETUP_SCRIPT, { exposeApi: true }).api;
   let calls = 0;
   const session = createCredentialSession(async () => { calls++; return { marker: calls }; });
   assert.equal(session.current(), null);

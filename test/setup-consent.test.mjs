@@ -27,6 +27,7 @@ test('consent defaults to English, safely preserves OAuth query and handles whil
   const url = new URL('https://bridge.example/authorize');
   url.search = new URLSearchParams({ client_id: 'registered-client', state: 'a&b="<', code_challenge: 'proof', lang: 'invalid' });
   const response = await authorization(new Request(url), env), html = await response.text();
+  assert.equal(response.headers.get('referrer-policy'), 'same-origin', 'Consent form POST must retain its same-origin Origin header');
   assert.match(html, /<html lang="en">/);
   assert.match(html, /Allow and verify with GitHub/);
   assert.match(html, /health/);

@@ -20,6 +20,9 @@ try {
   const mobile = join(output, 'dotlink-setup-mobile-zh.png');
   await page.screenshot({ path: desktop, fullPage: true });
   assert.equal(await page.locator('html').getAttribute('lang'), 'en');
+  assert.equal(await page.getByRole('link', { name: 'Download templates', exact: true }).getAttribute('href'),
+    'https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1');
+  assert.equal(await page.getByRole('link', { name: 'Download templates', exact: true }).isVisible(), true);
   assert.equal(await page.locator('#mcp-fresh-url').inputValue(), `${origin}/mcp`);
   assert.equal(await page.locator('#generate').isDisabled(), true);
   await page.locator('#fresh-install').check();
@@ -30,6 +33,9 @@ try {
   assert.equal(await page.locator('#device-token').isVisible(), false);
   await page.getByRole('button', { name: '简体中文', exact: true }).click();
   assert.equal(await page.locator('html').getAttribute('lang'), 'zh-CN');
+  assert.equal(await page.getByRole('link', { name: '下载模板', exact: true }).isVisible(), true);
+  await page.locator('[data-module="notifications"]').check();
+  assert.match(await page.locator('#guide-notifications').innerText(), /ChatGPT、Codex/);
   await page.locator('[data-module="focus"]').check();
   assert.equal(await page.locator('#guide-focus').isVisible(), true);
   assert.equal(await page.locator('#device-token').inputValue(), first);

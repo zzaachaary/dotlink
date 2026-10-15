@@ -228,6 +228,8 @@ test('real local Worker: authenticated subscription, signed callback, alarm retr
     occurred_at: new Date().toISOString(), payload: { app: 'Local fixture', body: 'Synthetic delivery test; no phone data' } });
   const event = notification(), receipt = await send('/ingest', event);
   assert.equal(receipt.status, 202);
+  // Consume dispatchFetch bodies before waiting for a later alarm/runtime turn.
+  const receiptBody = await receipt.json();
   await until(async () => (await health()).deliveries.some(row => row.status === 'accepted' && row.count === 1));
   assert.equal(deliveries.length, 2);
   assert.equal(deliveries[0].body, deliveries[1].body);
@@ -235,7 +237,7 @@ test('real local Worker: authenticated subscription, signed callback, alarm retr
   assert.notEqual(deliveries[0].signature, deliveries[1].signature, 'A retry must use a fresh signing timestamp');
   assert.equal(deliveries[1].subscriptionId, subscription.id);
   assert.equal(deliveries[1].data.data.event_id, event.event_id);
-  assert.equal(deliveries[1].data.data.received_at, (await receipt.json()).received_at);
+  assert.equal(deliveries[1].data.data.received_at, receiptBody.received_at);
   const stop = { name: params.name, arguments: params.arguments, delivery: { mode: 'webhook', url: callback },
     _meta: { progressToken: 'runtime-unsubscribe' } };
   await rpc('events/unsubscribe', stop);
@@ -337,12 +339,20 @@ test('real local Worker: browser-bound GitHub callback succeeds and rejects upst
         code_challenge: createHash('sha256').update(verifier).digest('base64url'), code_challenge_method: 'S256' }).toString();
       const consent = await browserFetch(authorize);
       assert.equal(consent.status, 200);
+      assert.equal(consent.headers.get('referrer-policy'), 'same-origin');
       const handle = (await consent.text()).match(/name="handle" value="([^"]+)"/)?.[1];
       assert.equal(typeof handle, 'string');
       const rejectedOrigin = await browserFetch(authorize, { method: 'POST', headers: {
         'content-type': 'application/x-www-form-urlencoded', origin: 'https://evil.example.com' },
         body: new URLSearchParams({ handle, decision: 'approve' }).toString() });
       assert.equal(rejectedOrigin.status, 403);
+      assert.deepEqual(await rejectedOrigin.json(), { error: 'origin_not_allowed' });
+      const opaqueOrigin = await browserFetch(authorize, { method: 'POST', headers: {
+        'content-type': 'application/x-www-form-urlencoded', origin: 'null' },
+        body: new URLSearchParams({ handle, decision: 'approve' }).toString() });
+      assert.equal(opaqueOrigin.status, 403);
+      assert.deepEqual(await opaqueOrigin.json(), { error: 'origin_not_allowed' });
+      // Rejected requests must not consume the browser-bound handle used below.
       const approved = await browserFetch(authorize, { method: 'POST', headers: {
         'content-type': 'application/x-www-form-urlencoded', origin: authOrigin },
         body: new URLSearchParams({ handle, decision: 'approve' }).toString() });

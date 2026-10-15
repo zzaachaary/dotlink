@@ -1,10 +1,9 @@
-# Secret names only; empty values cannot authenticate or enable ingestion.
-# 仅列出 Secret 名称；空值不能完成认证或开启上传。
-# Configure real values in your Worker's Settings > Variables and Secrets.
-# 在自己的 Worker 设置 > 变量和机密中填写实际值，不要提交凭据。
-# The setup page creates BRIDGE_SEAL_KEY and DEVICE_REGISTRY locally in your browser.
-# 设置页在浏览器本地生成 BRIDGE_SEAL_KEY 和 DEVICE_REGISTRY。
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
-BRIDGE_SEAL_KEY=
-DEVICE_REGISTRY=
+# Bootstrap first: no assignments, even empty ones. Cloudflare would require them before deployment.
+# 首次先部署：此文件仅包含注释；即使空赋值也会变成 Cloudflare 部署前的必填项。
+# With no configuration, only /setup is available; application routes return 503.
+# 未配置时仅 /setup 可用；业务接口返回 503。
+# After deployment, open /setup, generate fresh credentials, and create your own GitHub OAuth App.
+# 部署后打开 /setup 生成初装凭据，并创建自己的 GitHub OAuth App。
+# In the Worker dashboard add GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, BRIDGE_SEAL_KEY and DEVICE_REGISTRY as Secrets.
+# 在 Worker 控制台中添加上述四项 Secrets；同时按指南设置三个普通变量，先保持上传关闭。
+# Keep real values out of this file. See docs/deployment.md or docs/zh-CN/deployment.md.

@@ -2,6 +2,7 @@ import OAuthProvider from '@cloudflare/workers-oauth-provider';
 import { providerOptions } from './oauth-options.mjs';
 import { json, RequestError } from './protocol.mjs';
 import { setupResponse } from './setup.mjs';
+import { guardOAuth } from './oauth-guard.mjs';
 export { PhoneBridge } from './bridge.mjs';
 
 export default {
@@ -14,6 +15,8 @@ export default {
       const allowedOrigins = [env.PUBLIC_ORIGIN, env.AUTH_ORIGIN || env.PUBLIC_ORIGIN];
       if (origin && (!allowedOrigins.includes(origin) || origin !== new URL(request.url).origin))
         return json({ error: 'origin_not_allowed' }, 403);
+      request = await guardOAuth(request, env);
+      if (request instanceof Response) return request;
       return await new OAuthProvider(providerOptions(env)).fetch(request, env, ctx);
     } catch (error) {
       if (error instanceof RequestError) return json({ error: error.message }, error.status);

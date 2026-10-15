@@ -26,9 +26,9 @@ test('public configuration preserves dashboard settings and stable resource iden
   assert.deepEqual(config.migrations, [{ tag: 'v1', new_sqlite_classes: ['PhoneBridge'] }]);
 });
 
-test('deploy button example contains only empty, unusable secret placeholders', () => {
+test('first deployment declares no required secrets before the public setup page exists', () => {
   const lines = read('.dev.vars.example').split(/\r?\n/).filter(line => line && !line.startsWith('#'));
-  assert.deepEqual(lines, ['GITHUB_CLIENT_ID=', 'GITHUB_CLIENT_SECRET=', 'BRIDGE_SEAL_KEY=', 'DEVICE_REGISTRY=']);
+  assert.deepEqual(lines, [], 'Cloudflare turns even empty assignments into required first-deploy inputs');
   const ignore = read('.gitignore').split(/\r?\n/);
   assert.ok(ignore.includes('!.dev.vars.example'));
   assert.ok(ignore.includes('wrangler.local.*'));
@@ -113,7 +113,13 @@ test('release check detects secrets without exposing their values and checks loc
   writeFileSync(join(directory, '.dev.vars.example'), 'GITHUB_CLIENT_' + 'SECRET="not-an-empty-placeholder"\n');
   issues = checkRelease(directory).issues;
   assert.ok(issues.some(issue => issue.includes('literal secret value')));
-  assert.ok(issues.some(issue => issue.includes('only empty')));
+  assert.ok(issues.some(issue => issue.includes('comments only')));
+});
+
+test('release check rejects empty secrets that would block the bootstrap deployment', t => {
+  const { directory } = fixture(t);
+  writeFileSync(join(directory, '.dev.vars.example'), 'BRIDGE_SEAL_KEY=\nDEVICE_REGISTRY=\n');
+  assert.ok(checkRelease(directory).issues.some(issue => issue.includes('comments only')));
 });
 
 test('release check rejects deployment defaults that overwrite the dashboard and altered license text', t => {

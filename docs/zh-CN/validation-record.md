@@ -125,3 +125,88 @@ Focus 请求内容制作、导出及签名产物、独立导入、通知／充�
 所有者已授权公开仓库与四份脱敏模板，版本为 `v0.1.0-beta.1`；此次不追加手机测试。四份签名文件与校验和再次核对一致，独立只读审阅未发现新的代码公开或模板凭据阻断。仓库按81项文本白名单由已审阅代码和文档原稿组成，不包括个性化手机副本、内部记录或凭据。
 
 当前安装页加入Release附件下载，区分独立模板与历史共用helper手工教程；手工事件封装器明确读取输入中的payload子字典。这些文档更正没有改变运行逻辑或签名模板。此前51项单元／6项runtime与之后11项定向发布工具测试保留为带日期证据，公开CI记录发布提交实际执行的检查。
+
+## 2026-10-12：尚未发布的本地修复候选
+
+用户授权修复和回归测试，明确先不正式发布。候选修订首次部署流程、订阅生命周期隔离、OAuth 准入范围、开发依赖锁文件及双语说明。已发布 `v0.1.0-beta.1` 标签和签名快捷指令附件保持不变；下列结果针对本地候选，不代表已经部署该候选。
+
+| 检查 | 实际结果 | 证据边界 |
+| --- | --- | --- |
+| `npm test` | 66／66 通过 | 本地单元、SQLite、配置和协议检查，使用合成数据 |
+| `node --test --test-concurrency=1 test/runtime/*.test.mjs` | 最终完整运行 13／13 通过 | 真实本地 workerd／SQLite，上游 GitHub 和接收端为合成服务 |
+| 生产入口 OAuth 流程 | DCR → 浏览器 cookie／state 与 PKCE → 合成 GitHub → token／refresh → MCP → revoke，在 runtime 套件中通过 | 使用生产入口，不是真实 GitHub 登录或具备资格的 dot 账号验收 |
+| 订阅并发与迁移 | 迟到 `204`／`410`、取消后重建及旧 SQLite 代次迁移在 runtime 套件中通过 | 本地交错／升级证据，不代表云端升级或真实接收端撤销已验收 |
+| `npm audit --json --ignore-scripts --registry=https://registry.npmjs.org` | 全量依赖审计报告 0 项漏洞 | npm 官方针对本候选锁文件的响应，不等于不存在所有漏洞 |
+| `npm run check` | 退出 0；dry-run 包 327.20 KiB，gzip 79.24 KiB | 仅打包，没有部署 Cloudflare |
+| 最终 Chrome 界面验证 | 补充订阅后再启用的文案后，桌面 1440×1000 与窄屏 390×844 再次通过；外部请求 0、页面错误 0。第一轮另外确认未使用浏览器持久存储 | 本地实际渲染；窄视口不是 iPhone Safari 或真机验收 |
+
+首轮 runtime 为 12／13：一个既有测试延迟读取 `dispatchFetch` 响应体。修正为及时读取 JSON，并保留原 timestamp 断言，之后重新执行完整 13 项全部通过。这是测试响应生命周期问题，没有通过跳过测试或放宽时间戳断言掩盖失败。
+
+锁文件现固定 Wrangler 4.149.0、Miniflare 5.20261006.1-alpha、workerd 1.20261006.1、sharp 0.35.5 和 esbuild 0.28.2；生产 OAuth provider 保持 1.2.1。旧 Beta 中源自 sharp 同一公告的三项 high 在本候选全量审计中已不再出现；公开 Beta 仍保留旧锁文件和当时披露。Miniflare 仍是 Wrangler 依赖树选择的 alpha 版本，没有独立替换其依赖。
+
+第一轮浏览器通过后，设置页补充了“订阅完成后再启用上传”的说明。最终 Chrome 在两种视口均再次通过，页面错误 0、外部请求 0。最终代码也重新完成 66／66 单元、13／13 runtime（8.05 秒）及上表 dry-run 打包。历史快捷指令首次运行失败及待测手机项目保持原记录。
+
+本检查点没有 commit、push、云端部署、新标签或 Release。独立 Cloudflare 初装、准确公开 Deploy 按钮流程、真实 owner／非 owner OAuth 与撤销、iPhone 直接安装、Notifications／Charging／Focus 实际触发、跨租约续期及网络／重启行为仍需分别取得证据。本地检查不能直接得出正式稳定版就绪结论。
+
+## 2026-10-12：隔离 Cloudflare CLI 部署与设置页修复
+
+已创建真实隔离 Worker、全新 OAuth KV 及自绑定的新 Durable Object 命名空间，没有替换原个人服务。首次无凭据部署通过 19 项 HTTP 初装检查：setup 资源返回 `200`，未配置的业务 GET／POST 返回 `503`。但随后实际 Chrome 设置页报 `__name is not defined`，生成按钮禁用。该失败保留在本记录中；静态 HTTP 成功没有被当作设置流程可用。
+
+原因是用函数 `.toString()` 派生浏览器 JavaScript，而打包过程引入了辅助符号引用。候选改为通过 `String.raw` 提供静态 JavaScript。新增实际 Wrangler bundle 在 workerd 中的回归 1／1 通过，完整单元 66／66 通过，独立补丁审阅未发现新问题。此前 runtime 13／13 仍保留为自己的检查点，不改写成重新执行了合并后的完整套件。
+
+重新部署后，真实云端设置页在 Chrome 完成初始化和全新凭据生成；凭据默认隐藏，仅备份至被忽略的本地 `0600` 文件，公开证据不含凭据值。新部署报告 Worker startup 4 ms，source 325.32 KiB／gzip 79.50 KiB；这些部署指标不是事件端到端延迟测量。
+
+此阶段隔离 Worker 只配置最低 `PUBLIC_ORIGIN`、`OWNER_GITHUB_ID` 及 `ENABLE_INGEST=false` 变量。真实云端 Phase B 检查 37／37 通过，包括准确 metadata、未授权 MCP `401`、上传关闭 `503`、Origin 拒绝 `403`、测试后门不存在 `404`、token 方法 `405`、超大请求体／查询 `413`／`414`、字段超限 `400`、别名路径 `404`，以及 DCR 前 12 次成功、第 13 次 `429` 且包含 `Retry-After`。这是有界合成请求，不是资源耗尽或压力测试。
+
+用户已确认创建新的 GitHub OAuth App，并完成 GitHub 的确认访问步骤。这一较早检查点仍在配置部署专用的新 Secrets；下方后续记录确认配置已完成，但真实 OAuth 仍未通过。健康检查 `200` 只要求最低 Origin／owner 变量有效，不是 Secrets 完整性检查。
+
+本轮证明真实 CLI 初装路径及修复后的已部署设置页生成可用。官方 Deploy 按钮仍指向已发布 Beta，未验证尚未公开的候选。真实 owner／非 owner OAuth、dot 连接和签名事件处理、iPhone 直接安装与真实触发、撤销及跨 24 小时续期仍为独立待测门槛；没有正式发布或移动 Beta 标签。
+
+## 2026-10-12：Secrets 已配置，真实客户端 OAuth 仍受阻
+
+独立部署所需四项配置现已全部设为 Cloudflare Secrets。GitHub Client Secret 通过当前浏览器会话从 GitHub UI 直接填入 Cloudflare，没有写入本地文件；本记录不包含秘密值。`ENABLE_INGEST` 仍为 `false`，上传保持关闭。
+
+最新实际完整本地检查为单元 66／66、runtime 14／14、87 文件发布检查通过。这是新的完整运行结果；上方先前 13 项 runtime 和之后 1 项 bundle 定向回归保留各自历史，不把不同运行冒充同一次。
+
+已创建新的独立 ChatGPT 测试插件。用户明确同意读取这个新 Worker 的全部上传数据及建立事件订阅；同意范围和创建插件不等于 OAuth 完成。两次自动 Chrome 同意 POST 均出现 `ERR_BLOCKED_BY_CLIENT`。这一检查点原因尚未查明，没有归因于某个具体扩展或代理；下方后续记录保留 Worker 日志定位和真实浏览器修复证据。
+
+独立、有界的服务端五请求检查实际观察到：DCR `201`、同意页 `200`、缺少 cookie 拒绝 `400`、合法同意 `302` 跳转 GitHub，以及合成取消路径的预期 `302`。这验证对应服务端分支，不代表真人 GitHub 登录、callback 完成、token 交换或插件连接已通过。浏览器错误继续作为未解决的集成结果，不能被服务端 `302` 抵消。
+
+当前隔离服务仍没有经过验证的真实订阅、手机事件或签名回调 → dot 处理闭环。真实客户端 OAuth、owner／非 owner 行为、iPhone 安装和触发、投递／撤销及跨 24 小时续期继续待测；没有正式发布或移动既有 Beta 标签。
+
+## 2026-10-12：同意页 Origin 缺陷修复，真实 owner OAuth 完成
+
+第二个真实云端缺陷已由修复前 Worker tail 证据定位：同意页的 `Referrer-Policy: no-referrer` 使 Chrome 表单 POST 携带 `Origin: null`，现有 Worker 前置 Origin 校验返回 `403`。保留此前浏览器 `ERR_BLOCKED_BY_CLIENT` 现象；根因依据真实请求及服务端响应确认，不是推测浏览器扩展。
+
+`src/auth.mjs` 的最小修复将同意页策略改为 `same-origin`，没有接受 null 或跨站 Origin，也没有削弱 cookie／state、PKCE 或 owner 检查。定向 RED／GREEN 验证覆盖 4 项单元和 3 项 runtime；随后完整 runtime 14／14 通过。这些是本次修复后实际执行的检查，不宣称此前所有命令又运行了一遍。
+
+隔离环境重新部署后，真实 Chrome 携带 canonical Origin，得到预期 `302` 跳转独立 GitHub OAuth App，并完成 GitHub 仅公开数据权限的授权及 callback。ChatGPT 设置随后显示预期的已连接账号、OAuth 授权方式和隔离 Worker `/mcp` 地址。这证明本人真实登录及客户端连接已成功，超出此前仅服务端重定向检查的证据范围。公开记录不包含私人部署标识或凭据值。
+
+MCP 工具／订阅、目标 dot 事件处理、真实手机触发、非 owner 验证、撤销和跨 24 小时续期仍需独立验收；上传继续关闭，没有正式发布或移动 Beta 标签。
+
+## 2026-10-12：真实 MCP 订阅与合成事件投递
+
+新隔离插件已直接成功调用 `phone_devices` 和 `phone_bridge_status`，确认一个有效订阅及其实际到期时间。确认订阅后，才在独立 Worker 的 Cloudflare UI 把 `ENABLE_INGEST` 改为 `true`；`/health` 返回 `200` 且上传已开启。原个人 Bridge 未触及。
+
+私有、有界的云端上传检查器实际 10／10 通过：
+
+| 检查 | 实际结果 |
+| --- | --- |
+| 不带设备 token | `401` |
+| 假设备 token | `401` |
+| 错误设备身份 | `403` |
+| 非法布尔字段 | `400` |
+| 五个新事件：notification、charging true／false、focus on／off | 均 `202`，作为新事件持久化 |
+| 相同 notification 重试 | `202`、`duplicate:true`，保持原 `received_at` |
+
+直接 MCP 查询按 UUID 匹配五条新事件；投递统计为 `accepted:5`，最新充电和 Focus 状态均为布尔 `false`，重复重试没有追加事件。本轮证明合成上传的真实云端错误鉴权拒绝、持久化、幂等、MCP 查询及接收端确认。本地完整单元也再次运行并通过 66／66，完整 runtime 为 14／14 通过。
+
+这一检查点尚未观察到目标 dot 处理；接收端 accepted 不能证明 dot 理解或主动回复。私有检查器没有执行 iPhone 系统触发。单独的 dot 回复检查仍在进行，未提前记为通过；真实手机安装／触发、撤销和跨 24 小时续期继续待测。公开记录不包含部署标识、准确事件 ID 或私人测试标记，没有正式发布。
+
+## 2026-10-12：第六个合成事件与 dot 任务行为观测
+
+另一个不含私人内容的 notification 返回 `202 accepted`；隔离 MCP 的 `phone_bridge_status` 随后报告六次 accepted 投递。目标 dot 报告收到不含事件字段的自动任务唤醒，随后主动调用 `phone_events`，读出准确的新事件 ID、标题和 `received_at`。确认消息的发送 API 返回 accepted；这一个响应不能证明目标界面已显示该确认。
+
+经用户明确允许，直接检查任务编辑器：Trigger 指向独立验收连接，Event 为 `phone.event`，任务正文与这次单事件确认要求一致，且每次运行使用同一个聊天。这确认了任务配置来源，并已观察到自动唤醒后读取的行为。界面没有提供每次运行的来源标识，因此尚未独立取得“这一次事件投递 → 这一次具体任务运行”的唯一关联证据。通过主动查询匹配事件，不能单独证明它对应的 push 已触发该次运行。这是证据边界，不是已证实的投递故障。
+
+以上仍是云端合成事件，没有执行 iPhone 系统触发。iPhone 直接安装、首次及重复真实触发、锁屏与网络恢复、撤销和跨 24 小时续期仍需分别验收。没有正式发布；既有 Beta 标签和签名附件保持不变。

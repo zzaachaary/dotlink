@@ -37,16 +37,18 @@ Historical results were recorded through 2026-10-01 and documented on 2026-10-02
 
 You need an iPhone with the required iOS 27 Shortcuts triggers, your own Cloudflare and GitHub accounts, and a ChatGPT dot account that can connect to custom MCP services and subscribe to MCP Events. An ordinary model API or a client that only calls MCP tools is not equivalent.
 
-The Beta setup path is browser-first:
+**Local candidate, not published (2026-10-12).** The steps below describe the revised setup flow under local validation. The public `v0.1.0-beta.1` tag and Deploy button still use the original code and required-secret form; they do not include these fixes. A separate cloud installation and the remaining phone checks must pass before a stable release. Keep the existing Beta tag unchanged.
 
-1. Deploy a separate Worker to **your own Cloudflare account** with the official Deploy to Cloudflare flow.
+The revised setup path is browser-first:
+
+1. Deploy the reviewed candidate to a separate Worker in **your own Cloudflare account**, initially without variables or Secrets. Only `/setup` and its static assets are available; unconfigured service routes return `503`. Use the [deployment guide](docs/deployment.md) to select the candidate, because the public button still targets the published Beta.
 2. Open your Worker's `/setup`, choose English or 简体中文, and follow its guide. It generates fresh device credentials and a sealing key locally in your browser using Web Crypto.
-3. Enter the displayed variables and Secrets yourself in the Cloudflare dashboard, and create your own GitHub OAuth App. The guide does not receive a Cloudflare API token or GitHub Client Secret.
+3. Create your own GitHub OAuth App using this Worker’s `/callback`, then enter the variables and Secrets yourself in the Cloudflare dashboard. Keep `ENABLE_INGEST=false` and verify `/health`. The guide does not receive a Cloudflare API token or GitHub Client Secret.
 4. Connect your own dot to `/mcp`, complete owner authorization, and establish a `phone.event` subscription.
 5. Choose any of the three independent modules: notifications, charging, or Focus. Download the [signed templates](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1), then follow the [phone import and trigger setup](docs/iphone-shortcuts.md).
 6. Enable upload only after configuration, then verify a harmless synthetic event and the real triggers you selected, including the target dot's response.
 
-[Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) starts from this repository. The public button and a fresh-account installation remain follow-up checks for this experimental Beta; the existing personal deployment is not evidence that every fresh installation works.
+[Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) starts from this repository. The button currently uses the published Beta and cannot test the unpublished candidate. Its revised first-deployment flow still requires an isolated cloud installation; the existing personal deployment is not evidence that every fresh installation works.
 
 Use the default `workers.dev` address; buying a domain is not required. Neither that address nor a custom domain guarantees mainland-China reachability or changes platform availability. Cloudflare and ChatGPT usage may incur costs; no free-service or uptime guarantee is made.
 

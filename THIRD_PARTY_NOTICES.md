@@ -9,14 +9,16 @@ The table reflects `package-lock.json` and installed package license metadata. I
 | Component | Locked version | Purpose | License metadata |
 | --- | --- | --- | --- |
 | `@cloudflare/workers-oauth-provider` | 1.2.1 | Only direct production dependency; bridge OAuth | MIT |
-| `wrangler` | 4.144.0 | Development, bundling, and deployment | MIT OR Apache-2.0 |
-| `miniflare` | 5.20260926.1-alpha | Transitive Wrangler development dependency; local Worker tests | MIT |
-| `workerd` | 1.20260926.1 | Local Worker runtime | Apache-2.0 |
-| `esbuild` | 0.28.1 | Development bundling and tests | MIT |
-| `sharp` | 0.35.4 | Transitive development tool dependency | Apache-2.0 |
-| Platform-specific `@img/sharp-libvips-*` | 1.3.3 | Optional platform binary dependency | LGPL-3.0-or-later |
+| `wrangler` | 4.149.0 | Development, bundling, and deployment | MIT OR Apache-2.0 |
+| `miniflare` | 5.20261006.1-alpha | Transitive Wrangler development dependency; local Worker tests | MIT |
+| `workerd` | 1.20261006.1 | Local Worker runtime | Apache-2.0 |
+| `esbuild` | 0.28.2 | Development bundling and tests | MIT |
+| `sharp` | 0.35.5 | Transitive development tool dependency | Apache-2.0 |
+| Platform-specific `@img/sharp-libvips-*` | 1.3.4 | Optional platform binary dependency | LGPL-3.0-or-later |
 
 The pinned Wrangler toolchain brings in the alpha Miniflare version; DotLink does not claim every part of the toolchain is a stable release. npm selects optional packages for the current platform. Full resolution and integrity hashes are recorded in the lockfile.
+
+The unpublished local candidate’s full `npm audit --json --ignore-scripts --registry=https://registry.npmjs.org` on 2026-10-12 reported 0 vulnerabilities. Upgrading the locked toolchain brings sharp 0.35.5 and removes the three high audit entries present in the published Beta’s older Wrangler/Miniflare/sharp tree. The original `v0.1.0-beta.1` tag still contains its old lockfile and advisory disclosure. An audit result is time-specific and is not a comprehensive security guarantee. See the [validation record](docs/validation-record.md).
 
 Upstream projects: [Workers OAuth Provider](https://github.com/cloudflare/workers-oauth-provider), [Cloudflare workers-sdk](https://github.com/cloudflare/workers-sdk), [workerd](https://github.com/cloudflare/workerd), [esbuild](https://github.com/evanw/esbuild), [sharp](https://github.com/lovell/sharp), and [libvips](https://github.com/libvips/libvips).
 

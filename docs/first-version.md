@@ -17,7 +17,7 @@ The first version combined Shortcuts collection, Cloudflare Worker ingress, SQLi
 | Location, connection, app activity, health | Validation, storage, and relevant queries | Corresponding phone collection incomplete; health disabled. |
 | App-activity batches | Batch receipt, deduplication, estimated paired duration | Phone local logging/scheduled batching not implemented; not a Screen Time export. |
 | Renewal/server retries | Same subscription can update expiry; bounded outbox retries | Actual subscription/delivery passed; cross-day renewal and long-term recovery not accepted. |
-| One-step import package | No deliverable shortcut files | Published preparation consisted of reproduction steps, not a cross-device-verified binary package. |
+| One-step import package (historical, through 2026-10-01) | No deliverable shortcut files at that date | Four signed files were later published in the [Beta release](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1); their remaining installation/trigger checks are recorded separately. |
 
 Historical unit/SQLite and workerd checks preceded later test changes. Do not treat their counts as current. Run the relevant checks for a changed version and record actual output.
 

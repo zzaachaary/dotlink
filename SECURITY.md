@@ -22,6 +22,14 @@ The bilingual `/setup` guide is for a fresh deployment. Device tokens and `BRIDG
 
 Do not replace an existing `DEVICE_REGISTRY` or `BRIDGE_SEAL_KEY` with fresh setup output. The registry may contain other devices, and changing the sealing key prevents decryption of existing subscription keys. The guide does not prove that a deployment is unused. Confirm that fact in your own dashboard before applying values. Protect generated credentials from screen capture, clipboard sharing, shortcut exports, and public reports.
 
+## Public OAuth resource boundaries (local candidate)
+
+The unpublished candidate checks OAuth body, query and field bounds before provider parsing, external client metadata or authorization-state consumption. Registration and token bodies are capped at 64 KiB; consent POST is capped at 4 KiB. Encoded queries are capped at 8 KiB; query/form entry and value bounds are listed in the [protocol reference](docs/protocol.md). Body overflow returns `413`, query overflow `414`, and field-bound errors `400`.
+
+Five separate route budgets use aligned UTC minute/day windows in a named Durable Object apart from the phone-data object. The budget table has at most five rows and stores no IP address. A rejection returns `429` with `Retry-After`, does not increment counters and does not enter the OAuth provider; guard storage failures return `503`. This bounds admitted work, but anonymous clients can still exhaust a route’s current window. It is not per-source throttling, DDoS protection or a billing cap. Rejected traffic still consumes platform resources, and Cloudflare quotas apply independently.
+
+Subscription cancellation/re-creation and expiry/re-creation receive a new generation; late callback results cannot modify that new lifecycle. Renewal of an unexpired subscription retains its generation. A request already in flight cannot be recalled. Keep real revocation and upgrade verification separate from local race regression tests.
+
 ## Data destinations and retention
 
 Phone data enters the deployer's Cloudflare service, then ChatGPT through an authorized subscription. GitHub handles identity only and does not receive phone event bodies. The code does not persist the upstream GitHub access token.
@@ -42,7 +50,7 @@ Health, location, and app-activity fields do not establish consent or prove coll
 
 ## Pause and revoke
 
-Disable phone automations to stop future collection. Set `ENABLE_INGEST=false` in the deployment's active configuration to stop receiving and sending new events. For the dashboard-managed flow, apply the change in Cloudflare; for the CLI flow, deploy the edited local configuration. This does not recall delivered data.
+Disable phone automations to stop future collection. In the active Worker environment’s Cloudflare dashboard, set `ENABLE_INGEST` to string `false` and apply the change to stop receipt and further delivery. Browser and CLI deployments both use dashboard-managed variables; do not add a local `vars` override that could undo the pause on redeployment. Confirm the disabled state at `/health`. This does not delete retained data or recall delivered copies.
 
 A registry entry with `enabled:false` revokes that device's uploads and unfinished deliveries. The initial registration script refuses to replace an existing remote registry. Carefully preserve other devices when editing an existing registry; do not delete the whole registry to revoke one phone.
 
@@ -50,12 +58,16 @@ Disconnect the bridge in ChatGPT and verify subscriptions stop. Delivery recheck
 
 `BRIDGE_SEAL_KEY` decrypts existing subscription signing keys. Rotation requires a migration plan. This release has no one-click key rotation, deletion of all platform backups, or recall of dot memory.
 
+## Dependency audit status
+
+On 2026-10-12, the unpublished candidate’s full npm audit reported 0 vulnerabilities after updating the locked Wrangler toolchain to 4.149.0 and sharp to 0.35.5. This removes the three high audit entries associated with the older toolchain; the published `v0.1.0-beta.1` keeps its old lockfile and historical advisory disclosure. Miniflare remains an alpha transitive dependency selected by Wrangler. This result neither establishes that all vulnerabilities are absent nor validates a live deployment; see [third-party notices](THIRD_PARTY_NOTICES.md) and the [dated validation record](docs/validation-record.md).
+
 ## Publication and reporting
 
 Never publish real device tokens, GitHub Client Secrets, OAuth code/state, Cloudflare credentials, signing keys, actual local configuration, personal resource IDs or domains, contacts, event bodies, or private screenshots.
 
 Repeated-character tokens, test signing keys, and `example.com` addresses in tests are isolated fixtures. `test/runtime/fixture.mjs` includes a test authorization shortcut and must remain local to integration tests. Deploy `src/worker.mjs`.
 
-For ordinary issues, provide a minimal reproduction, fixed error code, and manually redacted configuration. Do not put exploit details or credentials in public issues. Prefer GitHub private vulnerability reporting once enabled in the public repository; until then, request a private contact without disclosing sensitive material publicly.
+For ordinary issues, provide a minimal reproduction, fixed error code, and manually redacted configuration. Do not put exploit details or credentials in public issues. GitHub private vulnerability reporting was enabled and its API status verified on 2026-10-12. Use [Report a vulnerability](https://github.com/zzaachaary/dotlink/security/advisories/new) for security reports; do not include real credentials or personal notification bodies even in a private report.
 
 Local secret checks and tests are not a comprehensive security audit. No independent full security audit or production SLA is claimed.

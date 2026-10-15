@@ -2,7 +2,7 @@
 
 [English](protocol.md) | [简体中文](zh-CN/protocol.md) · [Home](../README.md)
 
-This page describes the event protocol retained in candidate `0.1.0-beta.1`; the event envelope version remains `v:1`. JSON examples are synthetic; real uploads need actual occurrence times and fresh IDs for new events.
+This page describes the unchanged `v:1` event envelope and the unpublished local candidate’s updated admission and subscription behavior. The published `v0.1.0-beta.1` does not include those local fixes. JSON examples are synthetic; real uploads need actual occurrence times and fresh IDs for new events.
 
 ## Upload
 
@@ -50,6 +50,28 @@ Times are ISO 8601 with a time zone. `occurred_at` must be within the seven-day 
 - Business retention is seven days based on occurrence, excluding platform backups and dot copies.
 - Up to 32 registered devices under one owner and 8 event subscriptions.
 
+## OAuth admission limits (local candidate)
+
+The application checks these limits before OAuth provider parsing, external client-metadata lookup, or authorization-state consumption:
+
+- Request bodies: at most 64 KiB for registration and token requests; `/authorize` POST consent remains at most 4 KiB. Larger bodies return `413`, including when `Content-Length` is absent or misleading.
+- Encoded query strings: at most 8 KiB, otherwise `414`.
+- Query and URL-encoded form fields: at most 64 entries, including repeated fields; each key is at most 128 characters and each value at most 8,192 characters. Invalid field bounds return `400`. Legal repeated `resource` fields remain supported. These field bounds do not describe registration JSON fields.
+
+The following budgets are per installation, not per IP, account or device. Windows align to UTC minutes and UTC days; they are not rolling windows.
+
+| Route | Per minute | Per UTC day |
+| --- | --- | --- |
+| `POST /oauth/register` | 12 | 60 |
+| `GET /authorize` | 20 | 120 |
+| `POST /authorize` | 30 | 120 |
+| `GET /callback` | 30 | 120 |
+| `POST /oauth/token` | 60 | 1,000 |
+
+A separate named Durable Object in the existing `BRIDGE` namespace stores at most five route-budget rows, apart from the object holding phone data. It stores no IP address. Over-budget requests return `429` with `Retry-After` in seconds; rejection does not increment the budget, call the OAuth provider, fetch client metadata, or consume authorization state. An unavailable budget object returns `503` and does not bypass the guard.
+
+Registration, initial authorization, consent, callback and token traffic have separate budgets so one route cannot directly consume another route’s allowance. Anonymous traffic can still exhaust its route’s current window and temporarily block a legitimate request. This is bounded application admission, not DDoS protection, a guarantee of free-tier capacity, or a billing cap. Denied requests still use Worker and Durable Object resources. Respect `Retry-After`; do not disable the guard or retry in a tight loop.
+
 ## dot query tools
 
 All `/mcp` reads require bridge OAuth, the matching owner, and `phone:read`.
@@ -72,6 +94,12 @@ The consumer supplies callback and signing key. The bridge validates HTTPS, allo
 
 Default and maximum TTL are 86400000 milliseconds. Refreshing the same subscription identity updates expiry and authorization association and returns `refreshBefore`. This is a lease, not a membership payment. The client must refresh; real cross-day behavior requires separate verification. Nonempty cursors return `replay_not_supported`; events return `cursor:null`. Re-subscribing does not replay a gap; uploaded, unexpired history remains queryable.
 
-Each matching event is signed and delivered in its own request. Network failures, 408, 429, and server errors receive at most 8 total attempts with backoff and jitter. A 410 ends the subscription; permanent errors such as 413 are not retried. Callback `2xx` means acknowledgement only.
+Each subscription lifecycle has a generation. Cancelling or allowing it to expire, then creating it again, starts a new generation even when the subscription ID is reused. A renewal of an unexpired subscription, including a signing-key update, retains its generation and pending events. Before each send, the bridge confirms the job is still pending and matches the current generation; a late result, including `410`, may affect only the generation that sent it. An HTTP request already in flight cannot be recalled. Re-creation does not replay the cancelled generation’s events.
+
+Within a continuing generation, failures sent with superseded sealed secrets are treated as transient and still count toward the existing eight-attempt bound with backoff; an old `410` cannot end the renewed subscription. A successful `2xx` acknowledgement is retained. A grant absent from the batch snapshot triggers a fresh inventory check and another subscription check. A temporarily missing grant stops delivery and uses the existing bounded retry policy instead of deleting a renewed subscription based on stale inventory.
+
+Existing SQLite databases receive an additive, transactional generation-column/backfill migration; it retains event data and assigns existing pending jobs to their existing subscriptions. It is an application schema change, not a reason to change the `v1` Durable Object namespace migration or replace the database. Validate upgrade/restart behavior before updating an existing deployment; local migration checks do not certify cloud backup or rollback procedures.
+
+Each matching event is signed and delivered in its own request. Network failures, 408, 429, and server errors receive at most 8 total attempts with backoff and jitter. A 410 from the current configuration ends the subscription; permanent errors such as 413 from that configuration are not retried. Callback `2xx` means acknowledgement only.
 
 The [MCP Events protocol](https://developers.openai.com/plugins/build/mcp-events) supports renewal and optional cursor replay. Lack of replay here is an implementation limit, not a protocol-wide limit.

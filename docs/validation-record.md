@@ -122,3 +122,88 @@ The initial release is now prepared as an experimental Beta with the above limit
 The owner authorized publishing the repository and four sanitized templates as `v0.1.0-beta.1`. No additional device tests were requested for this release. The exact four signed-file hashes and checksums were rechecked; an independent read-only review found no new source-publication or template-secret blocker. All 81 allowlisted text files are assembled from reviewed code and canonical documents; personalized phone copies, internal records and credentials are excluded.
 
 Current installation pages now link to the release assets and distinguish self-contained templates from the historical shared-helper tutorial. The manual wrapper's payload instruction explicitly selects the input payload sub-dictionary. These documentation changes do not change runtime behavior or the signed templates. The earlier 51-unit / 6-runtime baseline and subsequent 11 targeted release-tool tests remain dated evidence; the public CI run records the checks for the published commit.
+
+## 2026-10-12 — unpublished local repair candidate
+
+The owner authorized repairs and regression testing, with no formal publication. The candidate changes first-deployment setup, subscription lifecycle isolation, OAuth admission bounds, the development dependency lockfile and bilingual guidance. The published `v0.1.0-beta.1` tag and its signed shortcut assets remain unchanged. These results describe the local candidate, not a deployment of it.
+
+| Check | Actual result | Evidence boundary |
+| --- | --- | --- |
+| `npm test` | 66/66 passed | Local unit, SQLite, configuration and protocol checks; synthetic data |
+| `node --test --test-concurrency=1 test/runtime/*.test.mjs` | Final complete run: 13/13 passed | Actual local workerd/SQLite; external GitHub and receiver services are synthetic |
+| Production-entry OAuth flow | DCR → browser cookie/state and PKCE → synthetic GitHub → token/refresh → MCP → revoke passed within the runtime suite | Exercises the production entry, not a real GitHub login or eligible dot account |
+| Subscription concurrency and migration | Late `204`/`410`, cancellation/re-creation and pre-generation SQLite migration checks passed within the runtime suite | Local interleaving/upgrade evidence; no cloud upgrade or real receiver revocation claim |
+| `npm audit --json --ignore-scripts --registry=https://registry.npmjs.org` | Full dependency audit: 0 reported vulnerabilities | Official npm response for this candidate’s lockfile; not proof that all vulnerabilities are absent |
+| `npm run check` | Exit 0; dry-run bundle 327.20 KiB, gzip 79.24 KiB | Bundling only; no Cloudflare deployment |
+| Final Chrome UI pass | Desktop 1440×1000 and narrow viewport 390×844 passed again after the subscription-before-enable wording update; 0 external requests and 0 page errors. The first pass also found no browser-persistent storage. | Local rendered setup; narrow viewport is not iPhone Safari or actual device acceptance |
+
+The first runtime run was 12/13: an existing test delayed reading a `dispatchFetch` response body. The test was corrected to read JSON promptly while retaining the original timestamp assertion, then the complete 13-test suite passed. This was a test response-lifetime issue; it was not hidden by skipping a test or relaxing the timestamp check.
+
+The lockfile now pins Wrangler 4.149.0, Miniflare 5.20261006.1-alpha, workerd 1.20261006.1, sharp 0.35.5 and esbuild 0.28.2; the production OAuth provider stays at 1.2.1. The Beta’s three high entries from the earlier sharp advisory are absent in this candidate’s full audit. The published Beta still has its old lockfile and historical disclosure. Miniflare remains the alpha version selected by Wrangler’s dependency tree, not an independently replaced package.
+
+After the first browser pass, the setup copy was clarified to require subscription completion before enabling upload. The final Chrome retest passed at both viewport sizes with 0 page errors and 0 external requests. The final code also passed a fresh complete 66/66 unit run, 13/13 runtime run (8.05 seconds) and the dry-run bundle reported above. Historical shortcut cold-run failures and deferred phone checks remain unchanged.
+
+No commit, push, cloud deployment, new tag or Release was made for these repairs at this checkpoint. A fresh isolated Cloudflare installation, the exact public Deploy button flow, real owner/non-owner OAuth and revocation, direct iPhone installation, actual Notifications/Charging/Focus triggers, cross-lease renewal and network/reboot behavior still need separate evidence. Local checks do not establish stable-release readiness.
+
+## 2026-10-12 — isolated Cloudflare CLI deployment and setup repair
+
+A real isolated Worker, fresh OAuth KV and fresh self-bound Durable Object namespace were created without replacing the personal service. The first credential-free deployment passed 19 HTTP bootstrap checks: setup resources returned `200`, and unconfigured business GET/POST routes returned `503`. The first deployed Chrome setup then failed with `__name is not defined` and a disabled generation button. That browser failure remains part of this record; static HTTP success did not establish a working setup flow.
+
+The failure came from deriving browser JavaScript with a function’s `.toString()` after bundling introduced a helper reference. The candidate now ships static JavaScript using `String.raw`. A new test of the actual Wrangler bundle in workerd passed 1/1, the complete unit suite passed 66/66, and an independent patch review found no additional issue. The earlier 13/13 runtime result remains its own checkpoint rather than being relabeled as a newly combined run.
+
+After redeployment, the actual cloud setup initialized and generated fresh credentials successfully in Chrome. Generated values remained hidden by default and were backed up only to an ignored local file with mode `0600`; no credential values appear in public evidence. The redeployed Worker reported startup 4 ms and source size 325.32 KiB / gzip 79.50 KiB. These deployment metrics are not an end-to-end event-latency measurement.
+
+The isolated Worker received only the minimum `PUBLIC_ORIGIN`, `OWNER_GITHUB_ID` and `ENABLE_INGEST=false` variables at this stage. The real cloud Phase B harness passed 37/37 checks, including exact metadata, unauthorized MCP `401`, disabled ingestion `503`, origin rejection `403`, absent test backdoor `404`, token method `405`, oversized bodies/queries `413`/`414`, oversized fields `400`, aliases `404`, and 12 successful DCR registrations followed by a 13th request rejected with `429` and `Retry-After`. These were bounded synthetic requests, not an exhaustion or load test.
+
+The owner approved creation of a new GitHub OAuth App and completed GitHub’s confirmation. New deployment-specific Secrets were still being configured at this earlier checkpoint; the following entry records completion of their configuration, while real OAuth remains unverified. Health `200` requires only the minimum origin/owner variables and is not a Secret-completeness check.
+
+This validates the actual CLI bootstrap path and the repaired deployed setup generation. The official Deploy button still targets the published Beta and remains unverified for this unpublished candidate. Real owner/non-owner OAuth, dot connection and signed event processing, direct iPhone installation and real triggers, revocation and cross-24-hour renewal remain separate unverified gates. No formal release or Beta-tag change occurred.
+
+## 2026-10-12 — Secrets configured; real client OAuth blocked
+
+All four required deployment-specific values are now configured as Cloudflare Secrets. The GitHub Client Secret was transferred directly from the GitHub UI through the active browser session into Cloudflare and was not written to a local file. No secret values are included in this record. Ingestion remains disabled with `ENABLE_INGEST=false`.
+
+The latest actual full local checks passed 66/66 unit tests, 14/14 runtime tests and the 87-file release checker. These are new complete results; the earlier 13-test runtime run and the later 1-test bundle regression above remain their own historical runs.
+
+A new separate ChatGPT test plugin was created. The owner explicitly approved reading all data uploaded to this new Worker and creating event subscriptions. That approval and plugin creation did not complete OAuth: two automated Chrome consent POST attempts ended in `ERR_BLOCKED_BY_CLIENT`. At that checkpoint the cause was unresolved, and no specific extension or proxy was blamed. The following entry records the later Worker-log diagnosis and actual browser fix.
+
+A separate bounded server-side five-request check observed: DCR `201`, consent page `200`, missing-cookie rejection `400`, valid consent `302` to GitHub, and the expected `302` on synthetic cancellation. This verifies those server branches, not actual GitHub sign-in, callback completion, token exchange or a connected plugin. The browser error is preserved as an unresolved integration result, not cleared by the server-side `302`.
+
+There is still no verified real subscription, phone event or signed callback → dot processing loop on this isolated service. Real client OAuth, owner/non-owner behavior, iPhone installation and triggers, delivery/revocation and cross-24-hour renewal remain pending. No formal release or existing Beta-tag change has occurred.
+
+## 2026-10-12 — consent Origin defect fixed; real owner OAuth completed
+
+The second real cloud defect was diagnosed with before-fix Worker tail evidence. The consent page’s `Referrer-Policy: no-referrer` caused Chrome’s form POST to send `Origin: null`; the Worker’s existing front-door Origin check returned `403`. The earlier browser `ERR_BLOCKED_BY_CLIENT` observation is retained, but the diagnosis is based on that actual request and server response, not a guess about browser extensions.
+
+The minimal change in `src/auth.mjs` sets the consent page’s policy to `same-origin`. It does not admit null or cross-site origins and does not weaken cookie/state, PKCE or owner checks. Targeted RED/GREEN verification covered 4 unit tests and 3 runtime tests; the subsequent full runtime suite passed 14/14. These are the runs actually performed after this fix, not a claim that every earlier command was repeated.
+
+After the new isolated deployment, actual Chrome sent the canonical Origin, received the expected `302` to the separate GitHub OAuth App, and completed GitHub’s public-data-only authorization and the callback. ChatGPT settings then showed the expected connected account, authorization method OAuth and the isolated Worker’s `/mcp` address. This establishes successful real owner login and the client connection; it goes beyond the earlier server-only redirect check. Public evidence omits private deployment identifiers and credential values.
+
+MCP tool/subscription acceptance, target-dot event processing, real phone triggers, non-owner verification, revocation and cross-24-hour renewal remain separate gates. Ingestion is still disabled. No formal release or Beta-tag change occurred.
+
+## 2026-10-12 — live MCP subscription and synthetic event delivery
+
+The new isolated plugin successfully called `phone_devices` and `phone_bridge_status` directly and reported one active subscription with an actual expiry. After confirming that subscription, `ENABLE_INGEST` was changed to `true` in the isolated Worker’s Cloudflare UI, and `/health` returned `200` with ingestion enabled. The original personal Bridge was untouched.
+
+A private, bounded cloud-ingestion harness passed 10/10 checks:
+
+| Check | Actual result |
+| --- | --- |
+| Missing device token | `401` |
+| Fake device token | `401` |
+| Wrong device identity | `403` |
+| Invalid Boolean field | `400` |
+| Five new events: notification, charging true/false, Focus on/off | Each returned `202` as a new persisted event |
+| Retry of the same notification | `202`, `duplicate:true`, and the original `received_at` retained |
+
+Direct MCP queries matched the five new events by UUID. Delivery counters reported `accepted:5`; the latest charging and Focus states were both Boolean `false`, and the duplicate did not append another event. These checks establish real cloud authentication rejection, persistence, idempotence, MCP querying and receiver acknowledgements for synthetic uploads. The local complete unit suite was also rerun and passed 66/66; the full runtime suite passed 14/14.
+
+There was still no observed target-dot processing at this checkpoint. Receiver acceptance is not proof of dot understanding or a proactive response. No real iPhone trigger was exercised by this private harness. A separate dot-response check was in progress and is not counted as passed here; real phone installation/triggers, revocation and cross-24-hour renewal remain pending. Public records omit deployment identifiers, exact event IDs and private test markers. No formal release occurred.
+
+## 2026-10-12 — sixth synthetic event and observed dot task behavior
+
+A separate, non-private notification returned `202 accepted`; the isolated MCP `phone_bridge_status` then reported six accepted deliveries. The target dot reported an automatic task wake without event fields and subsequently called `phone_events`, retrieving the exact new event ID, title and `received_at`. Its confirmation-send API returned accepted; that response alone does not establish that the confirmation was visible in the destination UI.
+
+With the owner’s permission, the task editor was inspected directly: the trigger was the isolated validation connector, the event was `phone.event`, and the task instructions matched this single-event confirmation check. The task was configured to use the same chat for every run. This confirms the configured subscription source and provides observed automatic-wake and subsequent-read behavior. The UI did not expose a per-run source identifier, so the unique association between this individual delivery and this particular task run has not been independently established. Matching an event through an explicit query does not, by itself, prove its push-to-run correlation. This is an evidence limit, not a demonstrated delivery failure.
+
+These are synthetic cloud events, not iPhone-trigger evidence. Direct iPhone installation, first and repeated real triggers, lock-screen and network recovery behavior, revocation and cross-24-hour renewal remain separate acceptance gates. No formal release occurred, and the published Beta tag and signed attachments remain unchanged.

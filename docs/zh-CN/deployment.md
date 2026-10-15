@@ -10,11 +10,15 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 
 ## 主路径：浏览器设置
 
-### 1. 部署独立 Worker
+### 1. 不带凭据部署候选
 
-打开 [Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink)，用自己的账号完成 Cloudflare 官方流程。独立账号部署路径仍是 Beta 验证项。选择独立 Worker，不要覆盖已有其他项目。确认前核对账号和将创建的资源。
+**本地候选，尚未发布（2026-10-12）。** 这份修订流程用于审阅后的本地候选。[公开 Deploy 按钮](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink)仍使用已发布 Beta，其表单在 `/setup` 尚不存在时要求填写 Secrets。不要用虚构凭据或别人的配置绕过表单；既有 Beta 标签保持不变。
 
-仓库中的 `wrangler.jsonc` 只包含公开部署结构、`OAUTH_KV`、`BRIDGE` SQLite Durable Object 及初始 migration，不包含私人账号 ID、token 或环境变量值。缺少配置时默认拒绝上传。不要用修改 migration 的方式清理数据。
+发布前进行获得明确授权的隔离云端测试时，使用下方 CLI 路径部署本地候选。在自己的账号选择独立 Worker、OAuth KV 和 Durable Object 命名空间，核对账号及资源名称；不要将此测试指向原个人服务。候选在所选仓库可用之后，仍需对准确版本验证未来的公开 Deploy 按钮。
+
+首次不填写变量或 Secrets。候选的 `.dev.vars.example` 仅含注释，不声明首次部署必填的 Secret 值。先让 `/setup` 可访问，再在第 4 步配置凭据。2026-10-12 已在真实隔离 Cloudflare 资源通过 CLI 初装，并在修复打包缺陷后通过已部署设置页的凭据生成流程。官方托管 Deploy 按钮尚未针对未发布候选验收，CLI 成功不能替代表单验证。
+
+仓库中的 `wrangler.jsonc` 只包含公开部署结构、`OAUTH_KV`、`BRIDGE` SQLite Durable Object 及初始 migration，不包含私人账号 ID、token 或环境变量值。缺少必要配置时，仅 `/setup` 及其静态资源可用；`/health`、OAuth、MCP 和上传均返回 `503`。这是预期初装状态，不应通过关闭配置检查绕过。不要用修改 migration 的方式清理数据。
 
 部署后打开 Cloudflare 显示的 HTTPS `workers.dev` 地址，在末尾加 `/setup`。[workers.dev 文档](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/)说明账号专属地址规则。如需自定义域名，先绑定至这个 Worker，再统一使用同一 Origin；见 [Custom Domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/)。
 
@@ -59,7 +63,7 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 
 原始设备 token 仅供手机上传器使用，不能读取数据。封装密钥和 GitHub 凭据不应进入快捷指令。[Cloudflare Secrets](https://developers.cloudflare.com/workers/configuration/secrets/)说明云端 Secret 配置。
 
-应用控制台更改后检查 `/health`，确认上传仍关闭。健康检查不返回设备或通知正文，也不能证明 OAuth、回调或手机投递成功。
+应用控制台更改后检查 `/health`：应返回 `200`，上传仍关闭。Origin／owner 最低变量有效后健康检查即可访问；`200` 不验证四个 Secrets 是否全部存在或正确。配置导致的 `503` 应检查这些最低变量。在当前使用环境核对 Secret 名称，不暴露其值，再分别验证真实 owner OAuth、设备鉴权和签名投递。健康检查不返回设备或通知正文。
 
 **重复部署规则：**公开配置设置 `keep_vars:true`，并刻意不写 `vars`，让这三个变量保持由控制台管理。不要向公开部署配置补入旧的示例或默认 `vars`；显式配置值可能在下次部署覆盖控制台设置。保留既有 Secrets、`DEVICE_REGISTRY` 和 `BRIDGE_SEAL_KEY`。配置行为以当前工具链和 [Wrangler 配置文档](https://developers.cloudflare.com/workers/wrangler/configuration/)为准。
 
@@ -67,7 +71,9 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 
 在具备资格的 ChatGPT/Codex 客户端中创建自定义 MCP 连接，服务器 URL 为自己的 Origin 加 `/mcp`，选择 OAuth。完成 Bridge 同意页和 GitHub 登录，并使用配置中的所有者身份。账号资格和 UI 可能变化，以 [OpenAI MCP Events](https://developers.openai.com/plugins/build/mcp-events)与当前客户端为准。项目没有共用公共插件 ID，也不包含别人的现成连接。
 
-服务支持 Dynamic Client Registration 与 CIMD。元数据发现失败时检查具体兼容性错误，不要关闭认证。OAuth 成功只证明身份链路接通。
+隔离云端验收已配置四项部署专用 Secrets，并在修复同意页后完成所有者真实 OAuth 登录。初次 Chrome 同意失败已由 Worker 日志定位：`Referrer-Policy: no-referrer` 使 POST 携带 `Origin: null`，被 Worker 正确拒绝。同意页现改为 `same-origin`，继续拒绝 `null` 和跨站 Origin。真实 Chrome 随后跳转独立 GitHub OAuth App、完成 callback，ChatGPT 插件显示使用 OAuth 的已连接账号和新 Worker `/mcp`。后续检查又通过了直接 `phone_devices`／`phone_bridge_status` 调用，并确认一个有效订阅，之后才在隔离服务开启上传。五个合成新事件和一次幂等重试已接受，投递统计记录五次接收端确认；真实手机触发和目标 dot 处理仍需独立证据，详见[日期化验证记录](validation-record.md)。
+
+服务支持 Dynamic Client Registration 与 CIMD。元数据发现失败时检查具体兼容性错误，不要关闭认证。本地候选实施 [OAuth 输入范围及按部署计算的路由预算](protocol.md)；遇到 `429` 按 `Retry-After` 等待，不要反复重新连接。token 与授权后续路由使用独立预算，但匿名请求仍可耗尽其所在路由窗口。OAuth 成功只证明身份链路接通。
 
 在**目标个人 dot** 中要求读取 `phone_devices`，确认 `iphone-primary`，订阅 `phone.event`，过滤该设备和本人选择的 kinds，再读取 `phone_bridge_status` 确认到期时间。通知为 `notification`，充电为 `device_status`，专注为 `focus`。回调地址和签名 Secret 由接收客户端生成，不需要本人填入聊天或仓库。
 
@@ -75,7 +81,7 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 
 ### 6. 选择手机模块，最后开启上传
 
-通知、充电、Focus 三项可独立选择任意组合。从 [Beta Release 附件](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)下载所需文件，按[模板导入说明](iphone-shortcuts.md)配置；Focus 需要 On／Off 两份。每份已内置上传动作，无需旧辅助快捷指令。本人手机只填写 endpoint、`iphone-primary` 和原始设备上传 token；Focus 模板还需填写所选模式名称。在 iPhone 补加并核对系统触发器，设置期间保持自动化关闭。指南另行保留高级手工路径。
+通知、充电、Focus 三项可独立选择任意组合。从 [Beta Release 附件](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)下载所需文件，按[模板导入说明](iphone-shortcuts.md)配置；Focus 需要 On／Off 两份。每份已内置上传动作，无需旧辅助快捷指令。本人手机只填写 endpoint、`iphone-primary` 和原始设备上传 token；Focus 模板还需填写所选模式名称。在 iPhone 补加并核对系统触发器，设置期间保持自动化关闭。通知来源明确排除 ChatGPT、Codex 和快捷指令，降低回执循环风险；一般限流不能替代这项排除。指南另行保留高级手工路径。
 
 核对 Worker、owner、订阅、手机输入绑定及来源范围后，在控制台将 `ENABLE_INGEST` 改为字符串 `true`，应用更改并检查 `/health`。仅切换开关无需重装依赖或重复全部未变化测试。
 
@@ -87,7 +93,7 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 
 ### 准备被忽略的本地配置
 
-使用 Node.js 24、npm 与现有锁文件（`@cloudflare/workers-oauth-provider` 1.2.1、Wrangler 4.144.0），无需全局安装 Wrangler：
+使用 Node.js 24、npm 与现有锁文件（`@cloudflare/workers-oauth-provider` 1.2.1、Wrangler 4.149.0），无需全局安装 Wrangler：
 
 ```sh
 node --version
@@ -124,10 +130,12 @@ npm test
 npm run test:runtime
 npm run check
 npm run deploy
-curl --fail --silent --show-error https://bridge.example.com/health
+# 配置前预期 /setup 200，/health 503。
+curl --silent --show-error --output /dev/null --write-out '%{http_code}\n' https://bridge.example.com/setup
+curl --silent --show-error --output /dev/null --write-out '%{http_code}\n' https://bridge.example.com/health
 ```
 
-前三项为合成检查和打包；`deploy` 才会修改云端。runtime 使用本地 workerd 和隔离回调，`check` 只作 dry run，不能证明线上授权可用。按前文在控制台配置变量，保持 `ENABLE_INGEST=false`。全新服务缺少变量时也默认关闭上传。
+前三项为合成检查和打包；`deploy` 才会修改云端。runtime 使用本地 workerd 和隔离回调，`check` 只作 dry run，不能证明线上授权可用。首次部署后完成浏览器第 2–4 步，在控制台补齐变量与 Secrets，保持 `ENABLE_INGEST=false`，之后才要求 `/health` 返回 `200`。全新服务缺少变量时保持关闭。
 
 ### 可选：初次身份配置脚本
 
@@ -161,6 +169,12 @@ BRIDGE_INGEST_URL='https://bridge.example.com/ingest' node scripts/register-ipho
 脚本查询远程 Secret 名称，只要已有 `DEVICE_REGISTRY` 就拒绝，无论其中内容为何。没有本地文件时，以 `0600` 创建 `work/private/iphone-device.json`；已有文件则校验、复用并要求 endpoint 完全一致。云端仅登记 token 的 SHA-256 摘要，不启用上传。上次结果不明时检查 Secret 名称和本地文件是否存在，不要删除 registry 或 token 来重试。此脚本不是设备管理后台。
 
 按主路径完成 dot 和手机设置。变量继续由控制台管理，不要将浏览器新生成的凭据与旧 CLI registry 混用。
+
+## 更新已有部署
+
+替换既有服务代码前，先在隔离资源验证候选。升级该服务时保留原 Worker、`BRIDGE` 命名空间、OAuth KV、owner、设备登记和封装密钥。不要重新生成 setup 凭据、清空存储，或为了安装补丁修改原 `v1` 命名空间 migration。
+
+本地候选在既有 SQLite 数据库新增订阅代次列并作事务回填，保留事件，关联原订阅生命周期的待投递任务。OAuth 准入预算使用相同绑定内单独命名的对象，不复制手机数据。真实升级前先确认平台支持的备份／恢复步骤，用有代表性的合成状态验证升级、重启、待投递、续期及取消行为。不能把本地迁移通过当作云端回滚安全的证据。
 
 ## 运行、暂停与域名变更
 

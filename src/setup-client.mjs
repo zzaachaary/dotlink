@@ -1,4 +1,6 @@
-export async function generateCredentials(cryptoApi = globalThis.crypto) {
+// Serve literal browser code: serializing bundled functions can capture Worker-only helpers.
+export const SETUP_SCRIPT = String.raw`
+async function generateCredentials(cryptoApi = globalThis.crypto) {
   const sealBytes = cryptoApi.getRandomValues(new Uint8Array(32));
   const tokenBytes = cryptoApi.getRandomValues(new Uint8Array(32));
   const sealKey = btoa(String.fromCharCode(...sealBytes));
@@ -10,7 +12,7 @@ export async function generateCredentials(cryptoApi = globalThis.crypto) {
   ]) });
 }
 
-export function createCredentialSession(generator = generateCredentials) {
+function createCredentialSession(generator = generateCredentials) {
   let credentials = null, pending = null;
   return {
     current: () => credentials,
@@ -32,16 +34,16 @@ function setupApp(sessionFactory, generator) {
   const fields = { sealKey: byId('seal-key'), deviceToken: byId('device-token'), registry: byId('device-registry') };
   Object.values(fields).forEach(field => { field.value = ''; });
   byId('fresh-install').checked = false;
-  const fieldLabel = id => document.querySelector(`label[for="${id}"]`).textContent.trim();
+  const fieldLabel = id => document.querySelector('label[for="' + id + '"]').textContent.trim();
   const showLabels = () => {
     document.querySelectorAll('[data-reveal]').forEach(button => {
       const field = byId(button.dataset.reveal), showing = !field.hidden;
       button.textContent = showing ? t('Hide', '隐藏') : t('Show', '显示');
-      button.setAttribute('aria-label', `${button.textContent} ${fieldLabel(field.id)}`);
+      button.setAttribute('aria-label', button.textContent + ' ' + fieldLabel(field.id));
       button.setAttribute('aria-expanded', String(showing));
     });
     document.querySelectorAll('[data-copy]').forEach(button => {
-      button.setAttribute('aria-label', `${t('Copy', '复制')} ${fieldLabel(button.dataset.copy)}`);
+      button.setAttribute('aria-label', t('Copy', '复制') + ' ' + fieldLabel(button.dataset.copy));
     });
   };
   const updateGeneration = () => {
@@ -59,10 +61,10 @@ function setupApp(sessionFactory, generator) {
   }));
   const origin = location.origin;
   byId('public-origin').value = origin;
-  byId('callback-url').value = `${origin}/callback`;
-  byId('mcp-url').value = `${origin}/mcp`;
-  byId('mcp-fresh-url').value = `${origin}/mcp`;
-  byId('ingest-url').value = `${origin}/ingest`;
+  byId('callback-url').value = origin + '/callback';
+  byId('mcp-url').value = origin + '/mcp';
+  byId('mcp-fresh-url').value = origin + '/mcp';
+  byId('ingest-url').value = origin + '/ingest';
   document.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', async () => {
     const field = byId(button.dataset.copy);
     if (!field.value) return;
@@ -73,7 +75,7 @@ function setupApp(sessionFactory, generator) {
     } catch {
       // Safari can deny clipboard access. An explicit copy click may reveal for manual selection.
       field.hidden = false;
-      const mask = document.querySelector(`[data-mask="${field.id}"]`);
+      const mask = document.querySelector('[data-mask="' + field.id + '"]');
       if (mask) mask.hidden = true;
       field.focus(); field.select(); showLabels();
       status.textContent = t('Clipboard unavailable. The value is selected; use your device’s Copy command, then hide it.', '剪贴板不可用。已选中内容，请用设备的“复制”命令，然后隐藏。');
@@ -82,7 +84,7 @@ function setupApp(sessionFactory, generator) {
   document.querySelectorAll('[data-reveal]').forEach(button => button.addEventListener('click', () => {
     const field = byId(button.dataset.reveal);
     field.hidden = !field.hidden;
-    document.querySelector(`[data-mask="${field.id}"]`).hidden = !field.hidden;
+    document.querySelector('[data-mask="' + field.id + '"]').hidden = !field.hidden;
     showLabels();
   }));
   byId('fresh-install').addEventListener('change', updateGeneration);
@@ -111,12 +113,11 @@ function setupApp(sessionFactory, generator) {
     }
   }));
   document.querySelectorAll('[data-module]').forEach(input => input.addEventListener('change', () => {
-    byId(`guide-${input.dataset.module}`).hidden = !input.checked;
+    byId('guide-' + input.dataset.module).hidden = !input.checked;
   }));
   byId('insecure').hidden = Boolean(globalThis.isSecureContext && globalThis.crypto?.subtle);
   showLabels(); updateGeneration();
 }
 
-// Function serialization keeps the exact tested crypto implementation in the local browser asset.
-// Dependencies are passed explicitly so bundler symbol renaming cannot break the standalone script.
-export const SETUP_SCRIPT = `(${setupApp.toString()})(${createCredentialSession.toString()}, ${generateCredentials.toString()});`;
+setupApp(createCredentialSession, generateCredentials);
+`;

@@ -19,10 +19,11 @@ const SCHEMA = [
   'CREATE INDEX IF NOT EXISTS app_observations_expiry ON app_observations(expires)',
   `CREATE TABLE IF NOT EXISTS subscriptions (
     id TEXT PRIMARY KEY, owner TEXT NOT NULL, grant_id TEXT NOT NULL, filters TEXT NOT NULL,
-    url TEXT NOT NULL, secrets TEXT NOT NULL, expires INTEGER NOT NULL, verified INTEGER NOT NULL)`,
+    url TEXT NOT NULL, secrets TEXT NOT NULL, expires INTEGER NOT NULL, verified INTEGER NOT NULL,
+    generation TEXT NOT NULL DEFAULT '')`,
   `CREATE TABLE IF NOT EXISTS outbox (
     subscription_id TEXT NOT NULL, event_seq INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0,
-    due INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'pending', last_code INTEGER,
+    due INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'pending', last_code INTEGER, generation TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(subscription_id, event_seq))`,
   'CREATE INDEX IF NOT EXISTS outbox_due ON outbox(status, due)',
   'CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value INTEGER NOT NULL)',
@@ -38,7 +39,19 @@ export function matches(filters, event) {
 export class Store {
   constructor(sql, transaction) {
     this.sql = sql; this.transaction = transaction;
-    for (const statement of SCHEMA) sql.exec(statement);
+    this.transaction(() => {
+      for (const statement of SCHEMA) sql.exec(statement);
+      // Preserve pre-generation SQLite data; both columns and their backfill commit together.
+      for (const table of ['subscriptions', 'outbox']) {
+        if (!this.rows(`PRAGMA table_info(${table})`).some(column => column.name === 'generation'))
+          sql.exec(`ALTER TABLE ${table} ADD COLUMN generation TEXT NOT NULL DEFAULT ''`);
+      }
+      // Repair old-format writes after a rollback too, without scanning the full outbox on every activation.
+      sql.exec("CREATE INDEX IF NOT EXISTS outbox_legacy_generation ON outbox(generation) WHERE generation = ''");
+      sql.exec("UPDATE subscriptions SET generation = lower(hex(randomblob(16))) WHERE generation = ''");
+      sql.exec(`UPDATE outbox SET generation = COALESCE((SELECT generation FROM subscriptions
+        WHERE id = outbox.subscription_id), '') WHERE generation = ''`);
+    });
   }
   rows(query, ...args) { return this.sql.exec(query, ...args).toArray(); }
   cleanup(now) {
@@ -83,8 +96,8 @@ export class Store {
             event.device_id, id, observation.app, observation.transition, measured, measured + RETENTION_MS);
         }
       }
-      for (const sub of this.rows('SELECT id, filters FROM subscriptions WHERE expires > ?', now)) {
-        if (matches(JSON.parse(sub.filters), event)) this.sql.exec('INSERT INTO outbox(subscription_id,event_seq,due) VALUES(?,?,?)', sub.id, row.seq, now);
+      for (const sub of this.rows('SELECT id, filters, generation FROM subscriptions WHERE expires > ?', now)) {
+        if (matches(JSON.parse(sub.filters), event)) this.sql.exec('INSERT INTO outbox(subscription_id,event_seq,due,generation) VALUES(?,?,?,?)', sub.id, row.seq, now, sub.generation);
       }
       return { accepted: true, duplicate: false, received_at: new Date(now).toISOString() };
     });
@@ -141,38 +154,57 @@ export class Store {
   }
   revision() { return this.rows("SELECT value FROM meta WHERE key = 'subscription_revision'")[0].value; }
   subscription(id) { return this.rows('SELECT * FROM subscriptions WHERE id = ?', id)[0]; }
-  subscribe(sub, expectedRevision) {
+  subscribe(sub, expectedRevision, now = Date.now()) {
     this.transaction(() => {
       if (this.revision() !== expectedRevision) throw new RequestError('subscription_changed_retry', 409);
-      if (!this.subscription(sub.id) && this.rows('SELECT COUNT(*) AS n FROM subscriptions')[0].n >= 8)
+      const previous = this.subscription(sub.id), continuing = previous && previous.expires > now;
+      if (!previous && this.rows('SELECT COUNT(*) AS n FROM subscriptions')[0].n >= 8)
         throw new RequestError('subscription_limit', 429);
-      this.sql.exec(`INSERT INTO subscriptions(id,owner,grant_id,filters,url,secrets,expires,verified) VALUES(?,?,?,?,?,?,?,?)
-        ON CONFLICT(id) DO UPDATE SET grant_id=excluded.grant_id, secrets=excluded.secrets, expires=excluded.expires, verified=excluded.verified`,
-        sub.id, sub.owner, sub.grant_id, sub.filters, sub.url, sub.secrets, sub.expires, sub.verified);
+      if (previous && !continuing) this.sql.exec('DELETE FROM outbox WHERE subscription_id = ?', sub.id);
+      const generation = continuing ? previous.generation : crypto.randomUUID();
+      this.sql.exec(`INSERT INTO subscriptions(id,owner,grant_id,filters,url,secrets,expires,verified,generation) VALUES(?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(id) DO UPDATE SET grant_id=excluded.grant_id, secrets=excluded.secrets, expires=excluded.expires,
+          verified=excluded.verified, generation=excluded.generation`,
+        sub.id, sub.owner, sub.grant_id, sub.filters, sub.url, sub.secrets, sub.expires, sub.verified, generation);
       this.sql.exec("UPDATE meta SET value = value + 1 WHERE key = 'subscription_revision'");
     });
   }
-  unsubscribe(id) {
-    this.transaction(() => {
-      this.sql.exec('DELETE FROM outbox WHERE subscription_id = ?', id);
-      this.sql.exec('DELETE FROM subscriptions WHERE id = ?', id);
-      // Also invalidate an in-flight first verification, even if it has not been persisted yet.
-      this.sql.exec("UPDATE meta SET value = value + 1 WHERE key = 'subscription_revision'");
-    });
+  #unsubscribe(id, generation) {
+    if (generation !== undefined && this.subscription(id)?.generation !== generation) return;
+    this.sql.exec('DELETE FROM outbox WHERE subscription_id = ?', id);
+    this.sql.exec('DELETE FROM subscriptions WHERE id = ?', id);
+    // Also invalidate an in-flight first verification, even if it has not been persisted yet.
+    this.sql.exec("UPDATE meta SET value = value + 1 WHERE key = 'subscription_revision'");
+  }
+  unsubscribe(id, generation) {
+    this.transaction(() => this.#unsubscribe(id, generation));
   }
   pending(now) {
     return this.rows(`SELECT o.*, e.body, e.device_id, e.event_id, e.occurred, e.received FROM outbox o JOIN events e ON e.seq=o.event_seq
-      JOIN subscriptions s ON s.id=o.subscription_id WHERE o.status='pending' AND o.due<=? AND e.expires>? AND s.expires>?
+      JOIN subscriptions s ON s.id=o.subscription_id AND s.generation=o.generation
+      WHERE o.status='pending' AND o.due<=? AND e.expires>? AND s.expires>?
       ORDER BY o.due, e.seq LIMIT 5`, now, now, now);
   }
-  deliveryResult(job, status, now) {
-    const attempts = job.attempts + 1;
-    const transient = status === 0 || status === 408 || status === 429 || status >= 500;
-    const state = status >= 200 && status < 300 ? 'accepted' : transient && attempts < 8 ? 'pending' : 'failed';
-    const jitter = crypto.getRandomValues(new Uint32Array(1))[0] % 1000;
-    this.sql.exec('UPDATE outbox SET attempts=?,status=?,last_code=?,due=? WHERE subscription_id=? AND event_seq=?',
-      attempts, state, status, now + Math.min(300000, 1000 * 2 ** attempts) + jitter, job.subscription_id, job.event_seq);
-    if (status === 410) this.unsubscribe(job.subscription_id);
+  deliverySubscription(job, now) {
+    return this.rows(`SELECT s.* FROM subscriptions s JOIN outbox o ON o.subscription_id=s.id AND o.generation=s.generation
+      JOIN events e ON e.seq=o.event_seq WHERE s.id=? AND s.generation=? AND o.event_seq=?
+      AND o.status='pending' AND s.expires>? AND e.expires>?`,
+    job.subscription_id, job.generation, job.event_seq, now, now)[0];
+  }
+  deliveryResult(job, status, now, sentSecrets) {
+    this.transaction(() => {
+      const current = this.deliverySubscription(job, now);
+      if (!current) return;
+      // Old-secret failures use the retry budget, but cannot permanently reject a renewed configuration.
+      const superseded = sentSecrets !== undefined && current.secrets !== sentSecrets;
+      const attempts = job.attempts + 1;
+      const transient = superseded || status === 0 || status === 408 || status === 429 || status >= 500;
+      const state = status >= 200 && status < 300 ? 'accepted' : transient && attempts < 8 ? 'pending' : 'failed';
+      const jitter = crypto.getRandomValues(new Uint32Array(1))[0] % 1000;
+      this.sql.exec('UPDATE outbox SET attempts=?,status=?,last_code=?,due=? WHERE subscription_id=? AND event_seq=? AND generation=?',
+        attempts, state, status, now + Math.min(300000, 1000 * 2 ** attempts) + jitter, job.subscription_id, job.event_seq, job.generation);
+      if (status === 410 && !superseded) this.#unsubscribe(job.subscription_id, job.generation);
+    });
   }
   nextAlarm(now) {
     const due = this.rows("SELECT MIN(due) AS due FROM outbox WHERE status='pending'")[0].due;

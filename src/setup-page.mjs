@@ -171,7 +171,7 @@ export const SETUP_HTML = `<!doctype html>
 </table>
 </div>
 <p class="hint">${text('For this single-origin setup, leave AUTH_ORIGIN unset. If you intentionally use a separate authorization origin, follow the advanced deployment guide; this page does not configure that arrangement.', '本同源设置应不设置 AUTH_ORIGIN。如果有意使用独立授权来源，请遵循高级部署指南；此页面不配置该模式。')}</p>
-<p>${text('After identity and credentials are saved, change ENABLE_INGEST to true and deploy again when you are ready to test your iPhone. This enables uploads; it does not install phone automations.', '身份与凭据保存后，准备测试 iPhone 时再将 ENABLE_INGEST 改为 true 并重新部署。这只会启用上传，不会安装手机自动化。')}</p>
+<p>${text('Keep ENABLE_INGEST false while configuring your phone and dot. Enable uploads only after completing the connection and subscription in step 6. This switch does not install phone automations.', '配置手机与 dot 期间保持 ENABLE_INGEST 为 false。完成步骤 6 的连接与订阅后再开启上传。这个开关不会安装手机自动化。')}</p>
 </section>
 <section class="card">
 <div class="step-heading">
@@ -206,10 +206,14 @@ export const SETUP_HTML = `<!doctype html>
 </label>
 </div>
 <div class="notice subtle">
-<strong>${text('Importable templates are not available yet.', '暂未提供可导入模板。')}</strong> ${text('No download or install button is offered. Use the project’s docs/iphone-shortcuts.md for manual setup until reviewed templates are published.', '当前不提供下载或安装按钮。经过检查的模板发布前，请按照项目 docs/iphone-shortcuts.md 手动搭建。')}</div>
+<strong>${text('Four signed Beta templates are available.', '已提供四份签名 Beta 模板。')}</strong>
+<a href="https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1" target="_blank" rel="noopener noreferrer">${text('Download templates', '下载模板')}</a> ·
+<a href="https://github.com/zzaachaary/dotlink/blob/main/docs/iphone-shortcuts.md" target="_blank" rel="noopener noreferrer">English guide</a> ·
+<a href="https://github.com/zzaachaary/dotlink/blob/main/docs/zh-CN/iphone-shortcuts.md" target="_blank" rel="noopener noreferrer">中文指南</a>
+${text('Use your own upload URL and device token, bind each trigger, and verify first and repeated runs before enabling daily use.', '填写自己的上传地址和设备令牌，绑定各项触发器，先验证首次和重复运行，再用于日常使用。')}</div>
 <div id="guide-notifications" class="module-guide">
 <h3>${text('Notification automation', '通知自动化')}</h3>
-<p>${text('Create an automation for new notifications and select the apps explicitly. Use only title/body fields iOS actually provides. Exclude ChatGPT and Shortcuts to avoid loops. This cannot read chat history or hidden content.', '创建新通知自动化并明确选择 App。只使用 iOS 实际提供的标题和正文字段。排除 ChatGPT 和快捷指令，避免循环。此功能不能读取聊天历史或隐藏内容。')}</p>
+<p>${text('Create an automation for new notifications and select the apps explicitly. Use only title/body fields iOS actually provides. Exclude ChatGPT, Codex and Shortcuts to avoid loops. This cannot read chat history or hidden content.', '创建新通知自动化并明确选择 App。只使用 iOS 实际提供的标题和正文字段。排除 ChatGPT、Codex 和快捷指令，避免循环。此功能不能读取聊天历史或隐藏内容。')}</p>
 </div>
 <div id="guide-battery" class="module-guide" hidden>
 <h3>${text('Charging automations', '充电自动化')}</h3>
@@ -228,7 +232,7 @@ export const SETUP_HTML = `<!doctype html>
 <h2>${text('Give your dot the Bridge address.', '将 Bridge 地址交给你的 dot。')}</h2>
 </div>
 </div>
-<p>${text('Add the MCP endpoint to your supported dot connection, approve the consent screen and sign in with the configured GitHub owner. Copy the Worker origin from step 1 and append /mcp.', '将 MCP 地址添加到支持的 dot 连接，确认授权页，并使用配置的 GitHub 所有者登录。复制步骤 1 的 Worker 来源并在末尾添加 /mcp。')}</p>${address('mcp-fresh-url', 'Your MCP address', '你的 MCP 地址')}<p>${text('Test with a non-private event. A 202 upload response confirms Bridge acceptance; a webhook 2xx confirms receiver acknowledgment. Separately verify that your dot actually processed the event. Offline retry and continuous subscription renewal are not guaranteed by this page.', '使用不含隐私的事件测试。上传返回 202 仅证明 Bridge 接收；webhook 返回 2xx 仅证明接收端确认。请单独核对 dot 是否实际处理。此页面不保证离线重试或持续订阅续期。')}</p>
+<p>${text('Add the MCP endpoint to your supported dot connection, approve the consent screen and sign in with the configured GitHub owner. Copy the Worker origin from step 1 and append /mcp.', '将 MCP 地址添加到支持的 dot 连接，确认授权页，并使用配置的 GitHub 所有者登录。复制步骤 1 的 Worker 来源并在末尾添加 /mcp。')}</p>${address('mcp-fresh-url', 'Your MCP address', '你的 MCP 地址')}<p>${text('Ask your dot to confirm iphone-primary with phone_devices, subscribe to phone.event for your selected modules, and check expiry with phone_bridge_status. After that, set ENABLE_INGEST to true in Cloudflare and apply the change before testing your phone.', '让 dot 用 phone_devices 确认 iphone-primary，订阅所选模块的 phone.event，并用 phone_bridge_status 检查到期时间。完成后，在 Cloudflare 将 ENABLE_INGEST 改为 true 并应用更改，再测试手机。')}</p><p>${text('Test with a non-private event. A 202 upload response confirms Bridge acceptance; a webhook 2xx confirms receiver acknowledgment. Separately verify that your dot actually processed the event. Offline retry and continuous subscription renewal are not guaranteed by this page.', '使用不含隐私的事件测试。上传返回 202 仅证明 Bridge 接收；webhook 返回 2xx 仅证明接收端确认。请单独核对 dot 是否实际处理。此页面不保证离线重试或持续订阅续期。')}</p>
 </section>
 </div>
 <p id="status" class="status" role="status" aria-live="polite" aria-atomic="true">

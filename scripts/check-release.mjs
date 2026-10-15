@@ -116,8 +116,8 @@ export function checkRelease(root, { documentRoot = root, includeFiles = false }
     } catch { issues.push(`${file}: missing or invalid JSON`); }
   }
   const variables = contents.get('.dev.vars.example');
-  if (!variables || variables.split(/\r?\n/).some(line => line.trim() && !line.trim().startsWith('#') && !/^[A-Z_]+=$/.test(line)))
-    issues.push('.dev.vars.example: only empty secret placeholders are allowed');
+  if (!variables || variables.split(/\r?\n/).some(line => line.trim() && !line.trim().startsWith('#')))
+    issues.push('.dev.vars.example: comments only; assignments would block bootstrap deployment');
   const result = { checked: contents.size, issues };
   if (includeFiles) result.files = [...contents].map(([path, text]) => ({ path,
     source: path.endsWith('.md') || path === 'LICENSE' || path === 'NOTICE' ? 'canonical-document' : 'code',

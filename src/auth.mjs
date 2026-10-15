@@ -49,7 +49,8 @@ export async function authorization(request, env) {
       consent.headers.set('Content-Type', 'text/html; charset=utf-8');
       consent.headers.set('Cache-Control', 'no-store');
       consent.headers.set('X-Content-Type-Options', 'nosniff');
-      consent.headers.set('Referrer-Policy', 'no-referrer');
+      // Preserve Origin on same-origin form POSTs; keep the authorization URL out of cross-origin referrers.
+      consent.headers.set('Referrer-Policy', 'same-origin');
       consent.headers.set('X-Frame-Options', 'DENY');
       // Browsers apply form-action to the Cancel POST's redirect as well as its initial target.
       // Use only the provider-validated callback origin, never raw authorization query parameters.

@@ -5,6 +5,7 @@ import { RequestError, validateEvent } from './protocol.mjs';
 import { Store } from './store.mjs';
 import { deliver, seal, unseal, verifyCallback } from './subscriptions.mjs';
 import { providerOptions } from './oauth-options.mjs';
+import { OAuthBudget } from './oauth-guard.mjs';
 
 async function reply(operation) {
   try { return { ok: true, value: await operation() }; }
@@ -15,9 +16,14 @@ async function reply(operation) {
 }
 export class PhoneBridge extends DurableObject {
   #store;
+  #oauthBudget;
   constructor(ctx, env) {
     super(ctx, env);
     this.#store = new Store(ctx.storage.sql, operation => ctx.storage.transactionSync(operation));
+  }
+  consumeOAuthBudget(route) {
+    this.#oauthBudget ??= new OAuthBudget(this.ctx.storage.sql, operation => this.ctx.storage.transactionSync(operation));
+    return this.#oauthBudget.consume(route);
   }
   async #schedule() {
     const existing = await this.ctx.storage.getAlarm();
@@ -103,26 +109,52 @@ export class PhoneBridge extends DurableObject {
       }
       for (const job of jobs) {
         // Re-read after every external await; unsubscribe/rotation can happen during a batch.
-        let sub = this.#store.subscription(job.subscription_id);
-        if (!sub || sub.expires <= Date.now()) continue;
-        const grant = grants.get(sub.grant_id);
+        let sub = this.#store.deliverySubscription(job, Date.now());
+        if (!sub) continue;
+        let grant = grants.get(sub.grant_id);
+        if (!grant) {
+          // A connection may renew with a new grant while an earlier webhook is in flight.
+          const grantId = sub.grant_id;
+          try { grants = await this.#grants(); }
+          catch {
+            this.#store.deliveryResult(job, 0, Date.now(), sub.secrets);
+            continue;
+          }
+          sub = this.#store.deliverySubscription(job, Date.now());
+          if (!sub || sub.grant_id !== grantId) continue;
+          grant = grants.get(grantId);
+          if (!grant) {
+            // KV inventory absence is not conclusive revocation; fail closed and retry within the existing bound.
+            this.#store.deliveryResult(job, 0, Date.now(), sub.secrets);
+            continue;
+          }
+        }
         const resources = Array.isArray(grant?.resource) ? grant.resource : [grant?.resource];
-        if (!grant || grant.userId !== this.env.OWNER_GITHUB_ID || !grant.scope.includes('phone:subscribe') ||
+        if (grant.userId !== this.env.OWNER_GITHUB_ID || !grant.scope.includes('phone:subscribe') ||
           !grant.scope.includes('phone:read') || !resources.includes(`${this.env.PUBLIC_ORIGIN}/mcp`) ||
           (grant.expiresAt !== undefined && grant.expiresAt * 1000 <= Date.now())) {
-          this.#store.unsubscribe(sub.id); continue;
+          this.#store.unsubscribe(sub.id, job.generation); continue;
         }
         if (!deviceRegistry(this.env).some(device => device.enabled && device.id === job.device_id)) {
           this.#store.deliveryResult(job, 403, Date.now()); continue;
         }
         let status = 0;
+        const sealed = sub.secrets;
         try {
-          const sealed = sub.secrets, secrets = await unseal(sealed, this.env.BRIDGE_SEAL_KEY, sub.id);
-          sub = this.#store.subscription(sub.id);
-          if (!sub || sub.expires <= Date.now() || sub.secrets !== sealed) continue;
-          status = await deliver(sub, secrets, JSON.parse(job.body), job.received);
-        } catch { console.error(JSON.stringify({ type: 'webhook_transport_failure' })); }
-        this.#store.deliveryResult(job, status, Date.now());
+          const secrets = await unseal(sealed, this.env.BRIDGE_SEAL_KEY, sub.id);
+          sub = this.#store.deliverySubscription(job, Date.now());
+          if (!sub || sub.secrets !== sealed) continue;
+          status = await deliver(sub, secrets, JSON.parse(job.body), job.received, (url, options) => {
+            // HMAC signing also yields: check again immediately before sending a captured job.
+            const current = this.#store.deliverySubscription(job, Date.now());
+            if (!current || current.secrets !== sealed) throw new RequestError('subscription_changed_retry', 409);
+            return fetch(url, options);
+          });
+        } catch (error) {
+          if (error instanceof RequestError && error.message === 'subscription_changed_retry') continue;
+          console.error(JSON.stringify({ type: 'webhook_transport_failure' }));
+        }
+        this.#store.deliveryResult(job, status, Date.now(), sealed);
       }
     } finally { await this.#schedule(); }
   }
