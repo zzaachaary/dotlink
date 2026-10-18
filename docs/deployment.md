@@ -10,13 +10,13 @@ Use your own accounts and credentials. Deploying creates or changes Cloudflare r
 
 ## Main path: browser setup
 
-### 1. Deploy the candidate without credentials
+### 1. Deploy a separate Worker
 
-**Local candidate, not published (2026-10-12).** This revised flow is for the reviewed local candidate. The [public Deploy button](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) still uses the published Beta, whose form requires Secrets before `/setup` exists. Do not enter dummy credentials or use someone else's values to get past that form. The old Beta tag remains unchanged.
+Open [Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) using this repository’s current default branch. Create a separate Worker, OAuth KV and Durable Object in your own account. Review the account and resource names, and complete the GitHub connection and build authorization requested by Cloudflare.
 
-For an explicitly authorized isolated cloud test before publication, deploy the local candidate through the CLI path below. Use a separate Worker, OAuth KV and Durable Object namespace in your own account; confirm the selected account and resource names. Do not point this test at an existing personal service. A future public Deploy button must be tested against the exact reviewed candidate after it is available in the selected repository.
+Deploy initially without variables or Secrets. `.dev.vars.example` contains comments only and declares no required bootstrap credentials; enter the seven settings below after `/setup` is available. Do not enter dummy credentials to bypass a form. If it still requires four Secrets, check that the repository/ref is the current source rather than the historical tag.
 
-First deploy without variables or Secrets. The candidate’s `.dev.vars.example` contains comments only, so it does not declare first-deployment secret values. Supply credentials in step 4 after `/setup` is available. An isolated real Cloudflare CLI deployment and the deployed setup’s credential-generation flow passed on 2026-10-12 after a bundling defect was fixed. The official hosted Deploy button has not been tested against this unpublished candidate; CLI success does not verify its form.
+On 2026-10-15, a validation branch from the same first-edition source lineage passed Hosted Deploy, fresh resource creation and actual browser `/setup` generation. Owner OAuth, dot and phone acceptance on that new instance remained unfinished. The [validation record](validation-record.md) preserves the details. Follow the remaining steps for your own fresh installation.
 
 The checked-in `wrangler.jsonc` contains deployment structure, `OAUTH_KV`, the `BRIDGE` SQLite Durable Object, and its initial migration. It has no private account IDs, tokens, or environment values. With required configuration absent, only `/setup` and its static assets are available; `/health`, OAuth, MCP and ingestion return `503`. This is the expected bootstrap state, not a signal to disable configuration checks. Do not alter migrations to clear data.
 
@@ -71,21 +71,23 @@ Apply the dashboard’s configuration changes and check `/health`: it must retur
 
 In an eligible ChatGPT/Codex client, create a custom MCP connection to your origin plus `/mcp`, using OAuth. Complete bridge consent and GitHub sign-in as the configured owner. Account availability and UI can change; consult [OpenAI MCP Events](https://developers.openai.com/plugins/build/mcp-events) and the current client. This project has no shared public plugin ID or preconfigured personal connection.
 
-During isolated cloud validation, all four deployment-specific Secrets were configured and the owner’s real OAuth login completed after a consent-page fix. The initial Chrome consent failure was traced in Worker logs to `Referrer-Policy: no-referrer` producing `Origin: null`, which the Worker correctly rejected. The consent page now uses `same-origin`; `null` and cross-site origins remain rejected. Actual Chrome consent then redirected to the separate GitHub OAuth App, completed the callback, and the ChatGPT plugin showed a connected account using OAuth at the new Worker’s `/mcp`. The following checkpoint also verified direct `phone_devices` and `phone_bridge_status` calls and one active subscription. Ingestion was then enabled in the isolated service, and five new synthetic events plus one idempotent retry were accepted with five receiver acknowledgements recorded. Actual phone triggers and target-dot processing remain separate pending evidence; see the [dated validation record](validation-record.md).
+An isolated instance has real owner OAuth, MCP subscription and event-delivery evidence. Every new installation still needs its own actual connection. Historical browser failures and fixes are retained in the [validation record](validation-record.md).
 
-The service supports Dynamic Client Registration and CIMD. If metadata discovery fails, inspect the actual compatibility error; do not disable authentication. The local candidate applies [OAuth input and per-installation route budgets](protocol.md); for `429`, wait for `Retry-After` rather than repeatedly reconnecting. The token and authorization-continuation routes use separate budgets, but anonymous requests can still exhaust their own route’s window. Successful OAuth only proves the identity connection.
+The service supports Dynamic Client Registration and CIMD. If metadata discovery fails, inspect the actual compatibility error; do not disable authentication. The implementation applies [OAuth input and per-installation route budgets](protocol.md); for `429`, wait for `Retry-After` rather than repeatedly reconnecting. The token and authorization-continuation routes use separate budgets, but anonymous requests can still exhaust their own route’s window. Successful OAuth only proves the identity connection.
 
 In the **target personal dot**, request `phone_devices` to confirm `iphone-primary`, subscribe to `phone.event` filtered to that device and the kinds you choose, and read `phone_bridge_status` to confirm expiry. Use `notification`, `device_status` for charging, and `focus`. The receiver supplies callback and signing Secret; do not paste those into a chat or repository.
 
 Leases default to and cannot exceed 24 hours. The client must renew; the code does not guarantee perpetual client renewal or replay subscription gaps. Real events after the original expiry point are required to verify long-term renewal.
 
-### 6. Select phone modules and enable upload last
+### 6. Complete Charging once, then add optional modules
 
-Choose any subset of notifications, charging, and Focus. Download the four optional files from [Beta release assets](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1) and follow the [template import guide](iphone-shortcuts.md); Focus uses both On and Off. Each file contains its own upload action, so no legacy helper shortcut is required. Enter only your endpoint, `iphone-primary`, and raw device upload token on your own phone; the Focus templates also ask for the chosen mode name. Add and check system triggers on the iPhone, keeping each automation off during setup. Explicitly exclude ChatGPT, Codex and Shortcuts from notification sources to reduce reply loops; general rate limits do not replace this exclusion. The guide retains a separate advanced manual path.
+Start by downloading only `DotLink-Charging.shortcut` from the [original asset page](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1). Follow the [phone guide](iphone-shortcuts.md) to enter your complete HTTPS `/ingest` URL and raw device token. Do not include `Bearer` or surrounding whitespace; the template adds the authentication prefix. Retain the default device ID `iphone-primary`. Save, exit, and reopen to verify the URL and token persisted. Keep automation off during setup.
 
-Confirm the Worker, owner, subscription, phone input bindings, and selected source scope. Then change dashboard `ENABLE_INGEST` to string `true`, apply it, and check `/health`. A switch-only change does not require reinstalling dependencies or repeating all unchanged tests.
+After owner OAuth and subscription succeed, set dashboard `ENABLE_INGEST` to string `true`, apply it, and check `/health`. Run Charging manually once, completing the first-use permission for your own Bridge. Confirm the new Bridge record and matching dot response. `accepted` means receipt; the corresponding dot result establishes processing of that event.
 
-First send harmless synthetic content, then test actual selected notification, lock-screen charging, and Focus triggers. Record phone execution, bridge `accepted:true`, callback ACK, and matching target-dot processing separately. Only the last checkpoint proves that particular event was handled by the dot. Keep private bodies and credentials out of evidence.
+After the manual pass, add and enable the Charger `Connects or Disconnects` trigger and test one locked-screen connection/disconnection. Then add a matching Focus On/Off pair if wanted. Finally select one notification source, rebind Notification App/Title/Body, and exclude ChatGPT, Codex and Shortcuts. Expand only after that module passes; do not repeat the cloud installation already completed.
+
+A manual timeout is not yet a trigger diagnosis. Check the saved full URL, raw token and first-use permissions first. For `401/403`, check identity; for `503`, configuration/ingestion; for `429`, wait for the stated window. Retry only the failed step; see [troubleshooting](verification.md).
 
 ## Advanced: local CLI deployment and recovery
 
@@ -139,7 +141,7 @@ The first three are synthetic checks/bundling; the deploy command is the actual 
 
 ### Optional initial identity helper
 
-Use the browser/dashboard path above by preference. The legacy helper uploads three Secrets from private local files and is appropriate only for a fresh deployment or recovery with the **correct original local sealing key**. It does not check whether a newly generated local key would replace an existing remote key. Never run it on an existing service without that confirmation.
+Prefer the browser/dashboard path above. This helper first reads Secret names for the selected Worker. If `BRIDGE_SEAL_KEY` already exists remotely, it preserves it and updates only the two GitHub credentials. An unreadable or invalid inventory stops the operation rather than assuming it is empty.
 
 ```sh
 mkdir -p work/private
@@ -154,7 +156,7 @@ Fill Client ID and Client Secret in that file using a local editor; never print 
 node scripts/configure-identity.mjs
 ```
 
-The helper creates or reuses `work/private/bridge-seal-key` and sends `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `BRIDGE_SEAL_KEY` through stdin. It does not enable ingestion. Back up private files securely; rotating the sealing key requires a separate migration plan.
+Only when the remote sealing key is absent does the helper create or reuse `work/private/bridge-seal-key` and upload it with the two GitHub credentials through stdin. When a remote key exists, it neither reads/creates a local key nor overwrites the remote key. It does not enable ingestion. Sealing-key rotation still requires a separate migration plan.
 
 ### Optional first-device helper
 
@@ -172,9 +174,9 @@ Finish dot and phone setup using the main path. Keep variables in the dashboard 
 
 ## Updating an existing deployment
 
-Validate the candidate on isolated resources before replacing existing service code. Keep the original Worker, `BRIDGE` namespace, OAuth KV, owner, registry and sealing key when upgrading that service. Do not generate fresh setup credentials, clear storage or change the original `v1` namespace migration to apply this patch.
+Validate the code on isolated resources before replacing existing service code. Keep the original Worker, `BRIDGE` namespace, OAuth KV, owner, registry and sealing key when upgrading that service. Do not generate fresh setup credentials, clear storage or change the original `v1` namespace migration to apply this patch.
 
-The local candidate adds subscription-generation columns and backfills them transactionally on existing SQLite databases. Events are retained and pending jobs are associated with the existing subscription lifecycle. The OAuth admission budget uses a separate named object in the same binding; it does not copy phone data. Before a live upgrade, verify a supported cloud backup/recovery procedure and exercise upgrade, restart, pending delivery, renewal and cancellation against representative synthetic state. Do not assume that local migration tests prove cloud rollback is safe.
+The implementation adds subscription-generation columns and backfills them transactionally on existing SQLite databases. The short-lived `ingest_receipts` migration also backfills receipts still present within the rolling quota window; counts already deleted before this migration cannot be recovered. Events are retained and pending jobs are associated with the existing subscription lifecycle. The OAuth admission budget uses a separate named object in the same binding; it does not copy phone data. Before a live upgrade, verify a supported cloud backup/recovery procedure and exercise upgrade, restart, pending delivery, renewal and cancellation against representative synthetic state. Do not assume that local migration tests prove cloud rollback is safe.
 
 ## Operation, pause, and origin changes
 

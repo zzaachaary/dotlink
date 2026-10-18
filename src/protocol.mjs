@@ -81,13 +81,16 @@ export function validateEvent(event, now = Date.now()) {
       if (typeof p.connected !== 'boolean') throw new RequestError('invalid_boolean');
       if (p.name !== undefined && !text(p.name, 200).trim()) throw new RequestError('invalid_connection_name');
       break;
-    case 'app_activity':
+    case 'app_activity': {
       record(p, ['app', 'transition', 'source', 'measured_at']);
-      timestamp(p.measured_at);
+      const measured = timestamp(p.measured_at);
+      if (measured <= now - RETENTION_MS || measured > now + 300000 || measured > occurred + 300000)
+        throw new RequestError('observation_outside_retention');
       if (!text(p.app, 200).trim()) throw new RequestError('missing_app');
       if (!['opened', 'closed'].includes(p.transition) || p.source !== 'shortcuts_app_trigger')
         throw new RequestError('invalid_app_observation');
       break;
+    }
     case 'app_activity_batch': {
       record(p, ['source', 'observations', 'measured_at']);
       timestamp(p.measured_at);

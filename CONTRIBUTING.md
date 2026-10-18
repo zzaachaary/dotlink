@@ -2,7 +2,7 @@
 
 [English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md) · [Home](README.md)
 
-Improvements to reliability, setup, documentation, and clearly scoped collectors are welcome. Read the [architecture](docs/architecture.md), [security policy](SECURITY.md), and [roadmap](docs/roadmap.md) first. The experimental [Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1) has known installation and device-verification follow-ups. Use [issues](https://github.com/zzaachaary/dotlink/issues) for reproducible reports and [pull requests](https://github.com/zzaachaary/dotlink/pulls) for focused changes; keep reports free of personal events and credentials.
+Improvements to reliability, setup, documentation, and clearly scoped collectors are welcome. Read the [architecture](docs/architecture.md), [security policy](SECURITY.md), and [roadmap](docs/roadmap.md) first. The first edition has known installation and device-verification follow-ups recorded in [validation](docs/validation-record.md). Use [issues](https://github.com/zzaachaary/dotlink/issues) for reproducible reports and [pull requests](https://github.com/zzaachaary/dotlink/pulls) for focused changes; keep reports free of personal events and credentials.
 
 ## Local development
 

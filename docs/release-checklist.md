@@ -2,7 +2,7 @@
 
 [English](release-checklist.md) | [简体中文](zh-CN/release-checklist.md) · [Home](../README.md)
 
-The initial `0.1.0-beta.1` experimental Beta was published on 2026-10-12 at commit `7f1ab182c485714ff62091f8b4b8cd1539be46b6`. The record below distinguishes completed Beta publication from the unpublished local fixes and the remaining stable-release gates. Existing personal-route evidence and the Charging round do not clear those gates. See the [validation record](validation-record.md).
+DotLink maintains its source and installation guide as one first edition. The historical `v0.1.0-beta.1` tag and assets remain; a new version label does not replace acceptance. Existing evidence and unfinished checks are kept separate below. A public repository does not establish stable phone behavior. See the [validation record](validation-record.md).
 
 ## Completed first prerelease record (2026-10-12)
 
@@ -15,24 +15,24 @@ The initial `0.1.0-beta.1` experimental Beta was published on 2026-10-12 at comm
 - [x] Retained LICENSE, NOTICE and bilingual instructions; privately configured phone copies were excluded.
 - [x] Published the reviewed repository and prerelease after the owner’s explicit instruction. Public links and Beta wording were updated; the original tag is retained.
 
-## Publication checks and local candidate gates
+## Existing deployment and source evidence
 
-- [x] Checked public repository and Release pages; both remote README source files matched canonical documents. Anonymous asset downloads matched bytes/hashes, and GitHub CI passed 54 unit tests, 6 runtime tests, release checks and dry-run bundling at the Beta commit.
-- [x] Re-inspected the Cloudflare form during the 2026-10-12 review: repository retrieval succeeded on retry; four required Secrets prevented the documented deploy-first order. No Worker was deployed in that review.
-- [x] Completed the unpublished candidate’s local regression: 66/66 unit tests, 13/13 runtime tests, full dependency audit 0, and dry-run bundling. This includes bootstrap, subscription races/old SQLite migration, OAuth admission and the production-entry synthetic OAuth lifecycle. See the [dated record](validation-record.md).
-- [ ] Deploy the candidate to isolated cloud resources; verify initial setup, dashboard configuration, owner/non-owner authorization, subscription, delivery and revocation. Check redeployment preserves variables and Secrets.
-- [ ] Test the public Deploy button against the exact candidate repository/ref once available. The current public button still points to the old Beta and cannot validate local fixes.
-- [x] Reviewed the local rendered setup UI in both languages at 1440×1000 and 390×844, including the final subscription-before-enable wording; 0 page errors and 0 external requests.
-- [ ] Exercise the installation links and complete the real external account flows on the deployed candidate; local UI/link checks do not establish account availability.
-- [ ] Produce a short demonstration using synthetic content. Match claims to evidence and describe the release as a self-hosted, noncommercial, source-available Beta.
-- [ ] Review the final post and media before the owner publishes or explicitly authorizes posting.
+- [x] Public repository, Release, anonymous assets and Beta CI checked on 2026-10-12. The required-Secrets deployment-order defect found then was subsequently repaired.
+- [x] Independent CLI deployment, actual setup, owner OAuth, MCP subscription and synthetic receipt/query/ACK passed on 2026-10-12, preserving the original personal Bridge.
+- [x] One manual iPhone Charging upload and matching dot result passed on 2026-10-13. This did not clear automatic-trigger or first/repeated reliability checks.
+- [x] Hosted Deploy from the same first-edition source lineage created fresh resources and passed actual setup generation, configuration and health on 2026-10-15. Its GitHub CI passed 73 unit and 17 runtime tests. These are dated results, not checks of later edits.
+- [ ] Complete owner OAuth, dot subscription and selected phone modules on the same new installation.
+- [x] On 2026-10-18, the final 88-file allowlist check passed; both source exports matched all 88 files, all 35 canonical document/license texts matched, and the five original Release asset hashes matched.
+- [ ] Confirm the final commit in the [current main workflow](https://github.com/zzaachaary/dotlink/actions/workflows/check.yml?query=branch%3Amain). Historical CI counts above do not describe this result.
 
-## Device and reliability gates before a stable release
+## Manual phone acceptance
 
-- [ ] Direct iPhone installation from the exact signed files, including first permissions and trigger binding.
-- [ ] New notification candidate and Focus On/Off phone-to-dot runs; first and repeated execution. Sleep/pop observations from existing automations do not validate the new DND candidates.
-- [ ] Per-event receiver ACK inspection, precise latency, subscription expiry crossing, restart, Wi-Fi/cellular and relevant regional reachability.
-- [ ] Longer observation before unattended-reliability claims. There is no persistent phone outbox or cursor replay; do not promise lossless offline recovery, instant delivery or all-app coverage.
+- [ ] Follow [deployment](deployment.md) once: deploy → seven settings → MCP subscription → manual Charging.
+- [ ] After manual Charging passes, test one locked-screen charger connection/disconnection.
+- [ ] Exercise selected Focus On/Off for the same mode and one notification source; record first/repeated behavior. Old Sleep/pop results do not validate new DND-bound templates.
+- [ ] Before making reliability claims, verify new events across the original lease deadline, network/reboot recovery, permission revocation and continued observation. There is no phone outbox or cursor replay; do not promise lossless offline recovery, instant delivery or all-app support.
+
+Describe demonstrations and social posts using actual passed scope; the owner publishes them separately. They are not installation evidence.
 
 ## Canonical document check
 

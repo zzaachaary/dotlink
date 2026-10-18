@@ -4,7 +4,7 @@
 
 通过 iPhone 系统快捷指令和自己部署的 Cloudflare Bridge，将选定 App 的新通知、充电变化与专注模式变化交给自己的 ChatGPT dot。
 
-**实验性 Beta `0.1.0-beta.1`。** 四份脱敏 Apple 签名模板见[首个 Beta 发布页](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)。Charging 已完成一轮真实 iPhone → Bridge → dot 闭环；通知与 Focus 沿用已有个人 Bridge 的事件协议，尚未完成的手机检查列在[验证记录](docs/zh-CN/validation-record.md)。本项目以 PolyForm Noncommercial 1.0.0 提供源码，由你自行部署，安装需要自己的账号和手工手机配置。
+**DotLink 首版自托管安装。** 四份脱敏 Apple 签名模板保留在[原始附件页](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)，其历史标签与 package 版本仍为 `0.1.0-beta.1`。本指南使用仓库当前源码；完整新安装及所选手机触发器仍需本人验收，尚不作稳定性保证。已通过与待验证的范围见[验证记录](docs/zh-CN/validation-record.md)。本项目采用 PolyForm Noncommercial 1.0.0，需要自己的账号和手工手机配置。
 
 DotLink 面向一个所有者及其登记设备。历史手机测试使用 iOS 27，只覆盖选定来源。项目与 Apple、Cloudflare、GitHub、OpenAI 没有官方隶属或背书关系。
 
@@ -31,24 +31,22 @@ DotLink 面向一个所有者及其登记设备。历史手机测试使用 iOS 2
 | 离线与恢复 | 没有手机持久 outbox，上传失败可能漏事件；不支持游标重放；真实跨日续期仍待验证。 |
 | 覆盖范围 | 不保证全部 App、未来新 App 自动加入、历史聊天读取，或完整 SMS／iMessage／附件采集。 |
 
-历史真机结果截至 2026-10-01，整理于 2026-10-02，不是当前候选版的复测结果。详见[验证说明](docs/zh-CN/verification.md)和[验证记录](docs/zh-CN/validation-record.md)。
+历史真机结果截至 2026-10-01，整理于 2026-10-02，不是当前源码及四份模板的完整复测结果。详见[验证说明](docs/zh-CN/verification.md)和[验证记录](docs/zh-CN/validation-record.md)。
 
 ## 用自己的账号安装
 
 需要具备所用 iOS 27 快捷指令触发器的 iPhone、自己的 Cloudflare 和 GitHub 账号，以及可以连接自定义 MCP 服务并订阅 MCP Events 的 ChatGPT dot 账号。普通模型 API 或只能调用 MCP 工具的客户端不等同于这项能力。
 
-**本地候选，尚未发布（2026-10-12）。** 下列步骤描述正在本地验证的修订流程；公开 `v0.1.0-beta.1` 标签和 Deploy 按钮仍使用旧代码及必填 Secrets 表单，不包含本轮修复。独立云端安装和剩余真机检查通过前不发布稳定版，也不移动既有 Beta 标签。
+按下面的顺序完成一次安装；每步成功后再继续，出错只检查当前步骤：
 
-修订后的设置流程以浏览器为主：
+1. 从 [Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) 在**自己的 Cloudflare 账号**创建独立 Worker，首次不填写变量和 Secrets。
+2. 打开新 Worker 的 `/setup`，选择语言，生成并私下保存自己的设备凭据与封装密钥。
+3. 创建 GitHub OAuth App，再按[部署指南](docs/zh-CN/deployment.md)填写 **3 个变量和 4 个 Secrets**；保持 `ENABLE_INGEST=false`，确认 `/health` 返回 `200`。
+4. 将目标 dot 通过 OAuth 连接到 `/mcp`，读取设备并建立 `phone.event` 订阅，确认订阅有有效期。
+5. **先只导入 Charging**。填写自己的完整 HTTPS `/ingest` 地址和原始设备 token（不加 `Bearer`，不带首尾空格），保存并重新打开核对。开启服务上传后手动运行一次，完成首次权限，并核对 Bridge 记录和 dot 回执。
+6. 手动通过后，启用 Charging 自动化，锁屏插入和拔出充电器各一次。随后按需加入 Focus On/Off 和一个通知来源，按[手机说明](docs/zh-CN/iphone-shortcuts.md)逐项确认。
 
-1. 在**自己的 Cloudflare 账号**将审阅后的候选部署到独立 Worker，首次不填写变量和 Secrets。此时仅 `/setup` 及其静态资源可用，未配置的业务路由返回 `503`。按[部署指南](docs/zh-CN/deployment.md)选择候选，当前公开按钮仍指向已发布 Beta。
-2. 打开自己 Worker 的 `/setup`，选择 English 或简体中文。向导在浏览器本地通过 Web Crypto 生成全新的设备凭据和封装密钥。
-3. 使用此 Worker 的 `/callback` 创建自己的 GitHub OAuth App，再到 Cloudflare 控制台填写变量与 Secrets。保持 `ENABLE_INGEST=false` 并检查 `/health`。向导不接收 Cloudflare API Token 或 GitHub Client Secret。
-4. 将自己的 dot 连接到 `/mcp`，完成所有者授权并建立 `phone.event` 订阅。
-5. 独立选择通知、充电、Focus 中需要的模块。下载[签名模板](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)，按[手机导入和触发器设置说明](docs/zh-CN/iphone-shortcuts.md)完成配置。
-6. 配置完成后再开启上传，验证无私人内容的合成事件和所选真实触发器，并核对目标 dot 的回执。
-
-[Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) 从本仓库开始部署。当前按钮使用已发布 Beta，不能验证尚未公开的候选。修订后的初装流程仍须独立云端安装验收；已有个人实例运行成功不代表全部新安装已验证。
+同一首版源码来源的 Cloudflare Hosted Deploy、全新资源创建和 `/setup` 生成流程已于 2026-10-15 通过；那次新安装的 owner OAuth、dot 连接和手机触发尚未全部完成。另一个隔离实例已有真实 OAuth、订阅、合成事件和一次手机手动 Charging 成功记录；这些证据不能合并成一次完整新安装成功。
 
 默认使用 `workers.dev` 地址，无需购买域名。该地址和自定义域名都不保证大陆网络可达，也不改变平台服务范围。Cloudflare 和 ChatGPT 使用可能产生费用；不承诺永久免费或可用性 SLA。
 

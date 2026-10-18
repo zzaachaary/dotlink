@@ -2,6 +2,8 @@
 
 [English](validation-record.md) | [简体中文](zh-CN/validation-record.md) · [Home](../README.md)
 
+This is a chronological evidence log. Statements such as “unpublished” describe their dated checkpoint; use [deployment](deployment.md) for current installation instructions.
+
 ## 2026-10-02 — original local source draft
 
 These are historical local results. Historical phone acceptance is in [verification](verification.md). The 2026-10-06 license-only change below did not rerun compilation or integration checks.
@@ -207,3 +209,29 @@ A separate, non-private notification returned `202 accepted`; the isolated MCP `
 With the owner’s permission, the task editor was inspected directly: the trigger was the isolated validation connector, the event was `phone.event`, and the task instructions matched this single-event confirmation check. The task was configured to use the same chat for every run. This confirms the configured subscription source and provides observed automatic-wake and subsequent-read behavior. The UI did not expose a per-run source identifier, so the unique association between this individual delivery and this particular task run has not been independently established. Matching an event through an explicit query does not, by itself, prove its push-to-run correlation. This is an evidence limit, not a demonstrated delivery failure.
 
 These are synthetic cloud events, not iPhone-trigger evidence. Direct iPhone installation, first and repeated real triggers, lock-screen and network recovery behavior, revocation and cross-24-hour renewal remain separate acceptance gates. No formal release occurred, and the published Beta tag and signed attachments remain unchanged.
+
+## 2026-10-13 to 2026-10-15 — phone evidence and Hosted Deploy
+
+The following advances the dated 10-12 checkpoints without changing their original outcomes. It does not merge different installations into one end-to-end pass.
+
+On 2026-10-13, one manual iPhone Charging run reached the isolated Bridge, with battery 33% and charging `false`, and the target dot later retrieved and confirmed the matching event. Intermittent phone HTTP timeouts and later automatic-trigger attempts without new events remained unresolved. A subsequent isolated token rotation invalidated the old token; the phone still needed the current raw token saved locally. Invalid-token rejection and an empty-body validation error test authentication boundaries, not a successful phone upload.
+
+On 2026-10-15, Shortcuts successfully fetched a public HTTPS test page and the isolated Worker’s health endpoint. Mirroring text input had failed to preserve the URL scheme reliably; a correctly entered phone URL worked. The remaining phone check was to save the complete `/ingest` address and current raw token, leave the editor, and run Charging once. These network checks do not establish that a valid authenticated upload or automatic trigger passed that day. Mirroring is an editing aid, not part of daily delivery.
+
+The same day, source commit `bfe943b6b4dfe866ad20734b66753de26e672215` on a validation branch passed [GitHub CI](https://github.com/zzaachaary/dotlink/actions/runs/38678371080): 73 unit tests, 17 runtime tests, the 87-file release check and dry-run bundling. This checkpoint includes continuing-subscription renewal protections against stale callback errors and stale grant inventories. It is not a result for subsequent source edits.
+
+A Hosted Deploy attempt seeded by commit SHA initially failed at clone with exit 128. Using the validation branch as the source then succeeded: Cloudflare created an independent installation, completed its hosted build/deploy, and served a working `/setup` that generated credentials in the actual browser. The generated installation repository contained 86 of the 87 source-manifest files: 84 were byte-identical, while `package.json` and `wrangler.jsonc` differed only in three deployment-specific fields; the source GitHub workflow was absent. This establishes the hosted deployment path, not an exact repository mirror. Minimum variables, health `200` and later Secret configuration were confirmed, but owner OAuth, dot connection and phone delivery were not completed on this newly created instance.
+
+The other isolated instance’s successful OAuth, subscription, synthetic events and manual phone event remain valid evidence for that separate environment. A refreshed subscription deadline alone does not prove delivery of a new event after the original deadline. Direct iPhone import, selected Notifications/Focus first and repeated triggers, permission revocation, recovery and sustained reliability remain pending. The historical tag and four signed attachments remain unchanged.
+
+## 2026-10-16 — bounded OAuth quota checks
+
+A local synthetic quota harness passed 47/47 checks of route minute/day limits and window recovery. The five installation-wide route budgets are documented in [protocol](protocol.md). These checks did not load-test Cloudflare, establish a free-tier capacity promise, or verify real non-owner login/revocation. Anonymous requests can still consume a route’s window; token refresh and revocation share the token route’s budget.
+
+## 2026-10-18 — source review and focused repairs
+
+The final local source check passed 84/84 unit tests and 18/18 runtime tests. Runtime checks cover the actual Wrangler-produced setup bundle, the production OAuth entry, real local Durable Object/SQLite migrations and subscription races. The full npm audit reported 0 vulnerabilities for the unchanged dependency lockfile. These are source/runtime results with isolated test services, not fresh cloud deployment or phone acceptance.
+
+Focused repairs require single App-activity measurements to use the same seven-day window as batch observations, recheck expiry at storage time, and keep the rolling event-receipt quota independent of business-data cleanup. The identity helper now preserves an existing remote sealing key and stops on an unreadable Secret inventory. The OAuth provider error hook logs only a fixed category/status; the separate upstream CIMD warning limitation remains documented in [security](../SECURITY.md).
+
+Current installation instructions were checked against the historical successful event contract and simplified to deploy, configure, subscribe, manual Charging, then locked-screen and optional modules. The four original signed artifacts were not modified by these source/document repairs. With iPhone Mirroring unavailable, no new phone run was performed. A complete manual installation and actual selected triggers remain pending; neither code review nor historical success guarantees a defect-free or stable release.

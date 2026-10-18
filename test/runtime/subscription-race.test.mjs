@@ -131,14 +131,22 @@ test('real Durable Object SQLite upgrades legacy subscriptions without losing pe
         sql.exec('INSERT INTO subscriptions VALUES (?,?,?,?,?,?,?,?)','legacy','owner','grant','{}','https://chatgpt.com/test','legacy-secrets',now+60000,now);
         const body=JSON.stringify({v:1,event_id:'legacy-event',device_id:'iphone-primary',kind:'notification',occurred_at:new Date(now).toISOString(),payload:{app:'Synthetic',body:'preserved'}});
         sql.exec('INSERT INTO events VALUES (?,?,?,?,?,?,?,?,?)',1,'iphone-primary','legacy-event','notification',now,now,now,now+60000,body);
+        sql.exec("WITH RECURSIVE fixture(n) AS (SELECT 2 UNION ALL SELECT n+1 FROM fixture WHERE n<120) INSERT INTO events SELECT n,'iphone-primary','legacy-'||n,'notification',?,?,?,?,? FROM fixture",now,now,now,now+1,body);
         sql.exec('INSERT INTO outbox(subscription_id,event_seq,due) VALUES(?,?,?)','legacy',1,now);
         const create=()=>new Store(sql,operation=>this.ctx.storage.transactionSync(operation));
         const first=create(), generation=first.subscription('legacy').generation;
         const second=create(), pending=second.pending(now);
-        return {generation, reopenedGeneration:second.subscription('legacy').generation,
+        const result = {generation, reopenedGeneration:second.subscription('legacy').generation,
           pendingGeneration:pending[0]?.generation, pendingCount:pending.length,
           legacySecret:second.deliverySubscription(pending[0],now)?.secrets,
           body:JSON.parse(pending[0].body).payload.body};
+        second.cleanup(now+1);
+        try { second.ingest({v:1,event_id:'new-event',device_id:'iphone-primary',kind:'notification',occurred_at:new Date(now).toISOString(),payload:{app:'Synthetic'}},now+1); }
+        catch (error) { result.rateError=error.message; }
+        result.receipts=sql.exec('SELECT COUNT(*) AS n FROM ingest_receipts').toArray()[0].n;
+        second.cleanup(now+60001);
+        result.remainingReceipts=sql.exec('SELECT COUNT(*) AS n FROM ingest_receipts').toArray()[0].n;
+        return result;
       }
     }
     export default {async fetch(request,env){return Response.json(await env.MIGRATION.get(env.MIGRATION.idFromName('legacy')).check())}};
@@ -159,4 +167,7 @@ test('real Durable Object SQLite upgrades legacy subscriptions without losing pe
   assert.equal(result.pendingCount, 1);
   assert.equal(result.legacySecret, 'legacy-secrets');
   assert.equal(result.body, 'preserved');
+  assert.equal(result.rateError, 'device_rate_limit');
+  assert.equal(result.receipts, 120);
+  assert.equal(result.remainingReceipts, 0);
 });

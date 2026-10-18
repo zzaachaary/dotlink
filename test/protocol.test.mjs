@@ -62,6 +62,18 @@ test('calendar dates are strict and UUID case does not create a second delivery 
   assert.throws(() => validateEvent({ ...event(), occurred_at: '2026-02-30T12:00:00Z' }, Date.parse('2026-03-02T12:00:00Z')), /invalid_timestamp/);
   assert.equal(validateEvent({ ...event(), event_id: event().event_id.toUpperCase() }, now).event_id, event().event_id);
 });
+test('single App observations share the batch retention and future-skew bounds', () => {
+  for (const measured of [now - RETENTION_MS, now - RETENTION_MS - 1, now + 300001]) {
+    const input = { ...event(), occurred_at: new Date(now + 300000).toISOString(), kind: 'app_activity',
+      payload: { app: 'Synthetic', transition: 'opened', source: 'shortcuts_app_trigger', measured_at: new Date(measured).toISOString() } };
+    assert.throws(() => validateEvent(input, now), /observation_outside_retention/);
+  }
+  for (const measured of [now - RETENTION_MS + 1, now, now + 300000]) {
+    const input = { ...event(), kind: 'app_activity', payload: { app: 'Synthetic', transition: 'opened',
+      source: 'shortcuts_app_trigger', measured_at: new Date(measured).toISOString() } };
+    assert.equal(validateEvent(input, now).payload.measured_at, input.payload.measured_at);
+  }
+});
 test('request parsing enforces stream size even without Content-Length', async () => {
   const request = new Request('https://example.com', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(event()) });
   assert.deepEqual(await readJson(request), event());

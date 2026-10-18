@@ -13,4 +13,4 @@
 
 这些示例不包含手机 token。真实 token 只进入本地上传器的 Authorization header，不能填入公开文件或 URL。文件格式详见 [协议参考 ](../docs/zh-CN/protocol.md)。
 
-四份签名 Beta 快捷指令文件已在 [Release 附件](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)提供，安装步骤见[手机导入说明](../docs/zh-CN/iphone-shortcuts.md)。本目录 JSON 示例不是快捷指令安装包；iPhone 直接安装及新通知／Focus 触发验证仍待完成。
+四份签名快捷指令文件已在 [Release 附件](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)提供，安装步骤见[手机导入说明](../docs/zh-CN/iphone-shortcuts.md)。本目录 JSON 示例不是快捷指令安装包；iPhone 直接安装及新通知／Focus 触发验证仍待完成。

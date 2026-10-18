@@ -13,7 +13,9 @@
 
 The dot may combine responses to several events. Absence of one chat bubble per event is not by itself a delivery failure; a server ACK is not proof of processing all content.
 
-In the current isolated cloud check, direct MCP queries matched five synthetic events by UUID and delivery counters reported five accepted callbacks, with no extra record for the duplicate retry. This establishes storage, query and receiver-acknowledgement evidence. It does not yet establish that the target dot processed those events or that iPhone system triggers ran; see the [dated validation record](validation-record.md).
+The 2026-10-12 isolated instance passed synthetic upload, MCP querying and receiver ACK checks. On 10-13, one manual iPhone Charging event matched a dot result. A new Hosted Deploy instance passed bootstrap and `/setup` on 10-15, but its owner/dot/phone chain remains unfinished. See the [dated validation record](validation-record.md) for exact boundaries.
+
+The final 2026-10-18 source check passed 84/84 unit and 18/18 runtime tests; the full npm audit reported 0 vulnerabilities. No new phone acceptance was performed.
 
 ## Historical first-version acceptance
 
@@ -41,22 +43,30 @@ Actual local check results are dated in the [validation record](validation-recor
 | New Notifications copy | Event fields and JSON POST/Bearer transport checked against the successful original; a real notification through this new copy remains pending. |
 | New Focus On/Off copies | Mac import completed; the phone trial toggled Sleep while these copies were bound to Do Not Disturb. That trial does not validate the new pair. |
 | Cold run | Focus Off's first local request timed out and a repeat passed; the initial delay remains unresolved. |
-| Independent installation | Direct iPhone file import, another account, and a fresh-account public Deploy to Cloudflare run remain pending. |
+| Independent installation | Direct iPhone file import and another account remain pending. Hosted Deploy bootstrap passed on 10-15; that new instance’s complete chain did not. |
 
 These remaining checks are disclosed follow-ups for an experimental Beta, not completed results. Cross-day renewal, network changes, and phone outbox behavior remain separate reliability items. A subscription deadline advancing is not proof of delivery beyond its original expiry; there is no implemented phone outbox. The [dated validation record](validation-record.md) retains the original checks and failures.
 
 ## Minimum acceptance for a new installation
 
-1. On a fresh unconfigured candidate, verify `/setup` is available and `/health`, OAuth, MCP and ingestion return `503`. Complete configuration through the [deployment guide](deployment.md), then require `/health` `200`, unauthorized `/mcp` rejection, and ingestion still disabled. Confirm the Worker and GitHub owner belong to you. Health `200` checks the minimum origin/owner configuration; it does not certify the presence or correctness of all Secrets.
-2. Complete OAuth in the target personal dot, subscribe to `phone.event`, and read `phone_bridge_status` for a valid deadline.
-3. Send a harmless synthetic event and verify upload, signed callback, and the target dot's response. A manual chat message to the dot is not an event-push test.
-4. Enable one selected notification automation. Receive a real test notification and compare event ID, source, and permitted fields; include lock-screen and background states.
-5. Test charger connection/disconnection and every selected Focus mode in both directions. A manual shortcut run is diagnostic, not proof of the system trigger.
-6. Separately exercise Wi-Fi/cellular changes, the actual network with proxy/VPN disabled, brief offline periods, first unlock after reboot, notification bursts, and summaries. Record missed uploads honestly; no phone outbox exists.
-7. Confirm `refreshBefore` advances before expiry and verify a real new event after the original expiry point. A short-TTL local test cannot prove real-platform cross-day renewal.
-8. Exclude ChatGPT/Codex and Shortcuts sources and observe for forwarding loops. Disconnect and verify delivery stops to check revocation.
+Follow [deployment](deployment.md) once, repairing only the step that fails:
 
-Use synthetic markers to distinguish event occurrence, phone execution, bridge receipt, and dot processing times. A fast single upload is not an end-to-end latency guarantee. Limited samples cannot establish an SLA or battery-saving claim.
+1. **Deploy and configure:** open the new Worker’s `/setup`; enter 3 variables and 4 Secrets; require `/health` `200` with ingestion disabled. Health checks minimum configuration, not every Secret.
+2. **Connect and subscribe:** complete owner OAuth in the target dot, read `iphone-primary`, and confirm a `phone.event` subscription and expiry.
+3. **Manual Charging first:** import only Charging, save the complete `/ingest` URL and raw token without `Bearer`, enable server ingestion, complete first-use permissions, and run once. Compare the new event’s time, battery and state; match the event ID when available and confirm the corresponding dot result.
+4. **Locked-screen Charging next:** enable the trigger and connect/disconnect once, confirming both actual true/false changes. A manual pass does not replace this step.
+5. **Optional modules:** toggle the same Focus mode on/off; then try one allowed notification source with rebound App/Title/Body, excluding ChatGPT, Codex and Shortcuts. Generate harmless new notification content and confirm its matching result.
+
+Passing your selected modules establishes basic use for that installation. Record first and repeated runs separately. Once dot automatically produces a matching result, do not repeatedly test solely because the platform does not expose a webhook-to-task-run ID. Asking dot to query history establishes reading/processing, but cannot by itself prove automatic wake-up.
+
+## Follow-up reliability and permission checks
+
+These determine the strength of public claims and are separate from every first installation:
+
+- Generate and confirm a new event after the original subscription expiry; an extended deadline alone is insufficient.
+- Confirm new events after Wi-Fi/cellular switching, brief offline recovery, and reboot/first unlock. There is no phone outbox, so uploads during an outage can be lost.
+- On an isolated test instance, verify non-owner rejection, device disablement, Bridge-grant revocation and ingestion pause. Pausing does not delete history or recall in-flight copies.
+- Observe first/repeated and locked-screen behavior. Limited samples cannot establish zero loss, exact latency, all-app support or an SLA.
 
 ## Troubleshooting
 
@@ -67,7 +77,7 @@ Use synthetic markers to distinguish event occurrence, phone execution, bridge r
 | App is wrong or always identical | Read the current notification's app property; do not hard-code one source or select body text. |
 | Date contains no time | ISO 8601 must contain date, time, and zone. |
 | Invalid JSON types | Native numbers/Booleans and a dictionary `payload`. |
-| 401/403 | Correct device token/ID; do not use a phone token to read; check OAuth owner and scopes. |
+| 401/403 | Saved raw token without a duplicated Bearer prefix, whitespace or newlines; matching device ID; OAuth owner/scopes for reads, not the phone token. |
 | 413/414/400 at OAuth endpoints | Request body, encoded query, or field bounds in the [protocol](protocol.md); correct the client request instead of increasing limits blindly. |
 | 429 at OAuth endpoints | Read `Retry-After` and wait for that route’s budget window; repeated reconnect attempts also consume admission allowance. |
 | 503 | Expected before bootstrap configuration; afterward check required configuration, `ENABLE_INGEST`, device enabled state, and the fixed OAuth guard error category if present. |

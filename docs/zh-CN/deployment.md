@@ -10,13 +10,13 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 
 ## 主路径：浏览器设置
 
-### 1. 不带凭据部署候选
+### 1. 部署独立 Worker
 
-**本地候选，尚未发布（2026-10-12）。** 这份修订流程用于审阅后的本地候选。[公开 Deploy 按钮](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink)仍使用已发布 Beta，其表单在 `/setup` 尚不存在时要求填写 Secrets。不要用虚构凭据或别人的配置绕过表单；既有 Beta 标签保持不变。
+打开 [Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink)，使用本仓库当前默认分支，在自己的账号创建独立 Worker、OAuth KV 和 Durable Object。核对目标账号与资源名称，完成 Cloudflare 要求的 GitHub 连接和构建授权。
 
-发布前进行获得明确授权的隔离云端测试时，使用下方 CLI 路径部署本地候选。在自己的账号选择独立 Worker、OAuth KV 和 Durable Object 命名空间，核对账号及资源名称；不要将此测试指向原个人服务。候选在所选仓库可用之后，仍需对准确版本验证未来的公开 Deploy 按钮。
+首次不填写变量或 Secrets。`.dev.vars.example` 只有注释，不声明初装必填凭据；等 `/setup` 可用后再填写下述 7 项配置。不要填写虚构凭据来绕过表单。如果表单仍要求四项 Secrets，检查选中的仓库／分支是否为当前源码，而不是历史标签。
 
-首次不填写变量或 Secrets。候选的 `.dev.vars.example` 仅含注释，不声明首次部署必填的 Secret 值。先让 `/setup` 可访问，再在第 4 步配置凭据。2026-10-12 已在真实隔离 Cloudflare 资源通过 CLI 初装，并在修复打包缺陷后通过已部署设置页的凭据生成流程。官方托管 Deploy 按钮尚未针对未发布候选验收，CLI 成功不能替代表单验证。
+2026-10-15 已用同一首版来源的验证分支完成 Hosted Deploy、全新资源创建与实际浏览器 `/setup` 生成；那次新实例的 owner OAuth、dot 和手机链路仍待完成。历史细节见[验证记录](validation-record.md)。以下步骤适用于自己的全新安装。
 
 仓库中的 `wrangler.jsonc` 只包含公开部署结构、`OAUTH_KV`、`BRIDGE` SQLite Durable Object 及初始 migration，不包含私人账号 ID、token 或环境变量值。缺少必要配置时，仅 `/setup` 及其静态资源可用；`/health`、OAuth、MCP 和上传均返回 `503`。这是预期初装状态，不应通过关闭配置检查绕过。不要用修改 migration 的方式清理数据。
 
@@ -71,21 +71,23 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 
 在具备资格的 ChatGPT/Codex 客户端中创建自定义 MCP 连接，服务器 URL 为自己的 Origin 加 `/mcp`，选择 OAuth。完成 Bridge 同意页和 GitHub 登录，并使用配置中的所有者身份。账号资格和 UI 可能变化，以 [OpenAI MCP Events](https://developers.openai.com/plugins/build/mcp-events)与当前客户端为准。项目没有共用公共插件 ID，也不包含别人的现成连接。
 
-隔离云端验收已配置四项部署专用 Secrets，并在修复同意页后完成所有者真实 OAuth 登录。初次 Chrome 同意失败已由 Worker 日志定位：`Referrer-Policy: no-referrer` 使 POST 携带 `Origin: null`，被 Worker 正确拒绝。同意页现改为 `same-origin`，继续拒绝 `null` 和跨站 Origin。真实 Chrome 随后跳转独立 GitHub OAuth App、完成 callback，ChatGPT 插件显示使用 OAuth 的已连接账号和新 Worker `/mcp`。后续检查又通过了直接 `phone_devices`／`phone_bridge_status` 调用，并确认一个有效订阅，之后才在隔离服务开启上传。五个合成新事件和一次幂等重试已接受，投递统计记录五次接收端确认；真实手机触发和目标 dot 处理仍需独立证据，详见[日期化验证记录](validation-record.md)。
+隔离实例已有真实 owner OAuth、MCP 订阅和事件投递证据；每个新安装仍需完成本节的实际连接。历次浏览器问题及修复保留在[验证记录](validation-record.md)。
 
-服务支持 Dynamic Client Registration 与 CIMD。元数据发现失败时检查具体兼容性错误，不要关闭认证。本地候选实施 [OAuth 输入范围及按部署计算的路由预算](protocol.md)；遇到 `429` 按 `Retry-After` 等待，不要反复重新连接。token 与授权后续路由使用独立预算，但匿名请求仍可耗尽其所在路由窗口。OAuth 成功只证明身份链路接通。
+服务支持 Dynamic Client Registration 与 CIMD。元数据发现失败时检查具体兼容性错误，不要关闭认证。当前实现实施 [OAuth 输入范围及按部署计算的路由预算](protocol.md)；遇到 `429` 按 `Retry-After` 等待，不要反复重新连接。token 与授权后续路由使用独立预算，但匿名请求仍可耗尽其所在路由窗口。OAuth 成功只证明身份链路接通。
 
 在**目标个人 dot** 中要求读取 `phone_devices`，确认 `iphone-primary`，订阅 `phone.event`，过滤该设备和本人选择的 kinds，再读取 `phone_bridge_status` 确认到期时间。通知为 `notification`，充电为 `device_status`，专注为 `focus`。回调地址和签名 Secret 由接收客户端生成，不需要本人填入聊天或仓库。
 
 订阅默认及最长 24 小时，需要客户端续期；代码不保证客户端永久刷新，也不自动回放断档事件。必须跨过原到期点，再验证真实新事件，才能形成长期续期证据。
 
-### 6. 选择手机模块，最后开启上传
+### 6. 先完成一次 Charging，再按需扩展
 
-通知、充电、Focus 三项可独立选择任意组合。从 [Beta Release 附件](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)下载所需文件，按[模板导入说明](iphone-shortcuts.md)配置；Focus 需要 On／Off 两份。每份已内置上传动作，无需旧辅助快捷指令。本人手机只填写 endpoint、`iphone-primary` 和原始设备上传 token；Focus 模板还需填写所选模式名称。在 iPhone 补加并核对系统触发器，设置期间保持自动化关闭。通知来源明确排除 ChatGPT、Codex 和快捷指令，降低回执循环风险；一般限流不能替代这项排除。指南另行保留高级手工路径。
+先从[原始附件页](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)仅下载 `DotLink-Charging.shortcut`，按[手机导入说明](iphone-shortcuts.md)填写完整 HTTPS `/ingest` 地址和原始设备 token。token 不加 `Bearer`，不带首尾空格；模板会添加认证前缀。保留默认设备 ID `iphone-primary`。保存退出，再重新打开核对地址和 token 已保存。配置期间自动化保持关闭。
 
-核对 Worker、owner、订阅、手机输入绑定及来源范围后，在控制台将 `ENABLE_INGEST` 改为字符串 `true`，应用更改并检查 `/health`。仅切换开关无需重装依赖或重复全部未变化测试。
+确认 owner OAuth 与订阅已成功，再将控制台 `ENABLE_INGEST` 改为字符串 `true`，应用并检查 `/health`。手动运行 Charging 一次，完成仅连接自己 Bridge 的首次权限，确认新的 Bridge 记录与 dot 回执。`accepted` 仅表示接收；查到相同事件并看到对应 dot 结果，才证明这次处理完成。
 
-先发无私人内容的合成事件，再测试实际选择的通知、锁屏充电和 Focus 触发。分别记录手机运行、Bridge `accepted:true`、回调 ACK、匹配事件 ID 的目标 dot 实际处理。只有最后一步证明该次事件被 dot 处理；验收材料不要包含私人正文和凭据。
+手动通过后补加 Charger 触发器 `Connects or Disconnects` 并启用，锁屏插入／拔出充电器各一次。然后按需配置 Focus 同一模式的 On/Off；最后只选一个通知来源，重新绑定 Notification 的 App/Title/Body，并排除 ChatGPT、Codex、快捷指令。每个模块通过后再扩展来源，不必重做已经通过的云端安装。
+
+手动超时不应先归因于触发器。先检查保存的完整 URL、原始 token 和首次权限；`401/403` 检查身份，`503` 检查配置／上传开关，`429` 等待指定窗口。只重试出错步骤，详见[排查表](verification.md)。
 
 ## 高级：本地 CLI 部署与恢复
 
@@ -139,7 +141,7 @@ curl --silent --show-error --output /dev/null --write-out '%{http_code}\n' https
 
 ### 可选：初次身份配置脚本
 
-优先使用前文浏览器／控制台流程。旧脚本会从本地私有文件上传三个 Secrets，仅用于全新部署，或确认保留了**原有正确封装密钥**的恢复。它不会检查新生成的本地 key 是否将覆盖远程旧 key；没有确认前不要在既有服务上执行。
+优先使用前文浏览器／控制台流程。此脚本先读取所选 Worker 的 Secret 名称清单；远端已有 `BRIDGE_SEAL_KEY` 时保留它，只更新 GitHub 两项凭据。清单读取失败或结构无效时停止，不猜测远端为空。
 
 ```sh
 mkdir -p work/private
@@ -154,7 +156,7 @@ chmod 600 work/private/github-oauth.json
 node scripts/configure-identity.mjs
 ```
 
-脚本生成或复用 `work/private/bridge-seal-key`，通过 stdin 发送 `GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`、`BRIDGE_SEAL_KEY`，不启用上传。私密备份相关文件；密钥轮换需要另外的迁移安排。
+只有远端确实没有 `BRIDGE_SEAL_KEY` 时，脚本才生成或复用本地 `work/private/bridge-seal-key`，随 GitHub 两项凭据通过 stdin 上传。远端已有封装密钥时不会读取或创建本地 key，也不会覆盖远端 key。脚本不启用上传；密钥轮换仍需另外的迁移安排。
 
 ### 可选：首次设备登记脚本
 
@@ -172,9 +174,9 @@ BRIDGE_INGEST_URL='https://bridge.example.com/ingest' node scripts/register-ipho
 
 ## 更新已有部署
 
-替换既有服务代码前，先在隔离资源验证候选。升级该服务时保留原 Worker、`BRIDGE` 命名空间、OAuth KV、owner、设备登记和封装密钥。不要重新生成 setup 凭据、清空存储，或为了安装补丁修改原 `v1` 命名空间 migration。
+替换既有服务代码前，先在隔离资源验证代码。升级该服务时保留原 Worker、`BRIDGE` 命名空间、OAuth KV、owner、设备登记和封装密钥。不要重新生成 setup 凭据、清空存储，或为了安装补丁修改原 `v1` 命名空间 migration。
 
-本地候选在既有 SQLite 数据库新增订阅代次列并作事务回填，保留事件，关联原订阅生命周期的待投递任务。OAuth 准入预算使用相同绑定内单独命名的对象，不复制手机数据。真实升级前先确认平台支持的备份／恢复步骤，用有代表性的合成状态验证升级、重启、待投递、续期及取消行为。不能把本地迁移通过当作云端回滚安全的证据。
+当前实现在既有 SQLite 数据库新增订阅代次列并作事务回填；短期 `ingest_receipts` 迁移也会回填窗口内仍存在的接收记录，迁移前已经删除的计数无法恢复。该变更不修改 `v1` 命名空间。它保留事件，关联原订阅生命周期的待投递任务。OAuth 准入预算使用相同绑定内单独命名的对象，不复制手机数据。真实升级前先确认平台支持的备份／恢复步骤，用有代表性的合成状态验证升级、重启、待投递、续期及取消行为。不能把本地迁移通过当作云端回滚安全的证据。
 
 ## 运行、暂停与域名变更
 

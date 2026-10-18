@@ -3,6 +3,7 @@ import { summarizeAppUsage } from './app-usage.mjs';
 
 export const KINDS = ['notification', 'device_status', 'location', 'focus', 'connection', 'app_activity', 'app_activity_batch', 'health'];
 const CAPACITY = 10000;
+const RATE_WINDOW_MS = 60000, DEVICE_RATE_LIMIT = 120;
 const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS events (
     seq INTEGER PRIMARY KEY AUTOINCREMENT, device_id TEXT NOT NULL, event_id TEXT NOT NULL,
@@ -12,6 +13,9 @@ const SCHEMA = [
   'CREATE INDEX IF NOT EXISTS events_expiry ON events(expires)',
   'CREATE INDEX IF NOT EXISTS events_status ON events(device_id, kind, measured DESC, seq DESC)',
   'CREATE INDEX IF NOT EXISTS events_rate ON events(device_id, received)',
+  'CREATE TABLE IF NOT EXISTS ingest_receipts (device_id TEXT NOT NULL, received INTEGER NOT NULL)',
+  'CREATE INDEX IF NOT EXISTS ingest_receipts_device ON ingest_receipts(device_id, received)',
+  'CREATE INDEX IF NOT EXISTS ingest_receipts_expiry ON ingest_receipts(received)',
   `CREATE TABLE IF NOT EXISTS app_observations (
     device_id TEXT NOT NULL, id TEXT NOT NULL, app TEXT NOT NULL, transition TEXT NOT NULL,
     measured INTEGER NOT NULL, expires INTEGER NOT NULL, PRIMARY KEY(device_id, id))`,
@@ -37,7 +41,7 @@ export function matches(filters, event) {
 
 /** SQL adapter is Cloudflare SqlStorage; synchronous transactions are supplied by its storage. */
 export class Store {
-  constructor(sql, transaction) {
+  constructor(sql, transaction, now = Date.now()) {
     this.sql = sql; this.transaction = transaction;
     this.transaction(() => {
       for (const statement of SCHEMA) sql.exec(statement);
@@ -51,6 +55,13 @@ export class Store {
       sql.exec("UPDATE subscriptions SET generation = lower(hex(randomblob(16))) WHERE generation = ''");
       sql.exec(`UPDATE outbox SET generation = COALESCE((SELECT generation FROM subscriptions
         WHERE id = outbox.subscription_id), '') WHERE generation = ''`);
+      if (!this.rows("SELECT value FROM meta WHERE key = 'ingest_receipts_initialized'").length) {
+        // Preserve the current admission window on upgrade, independently of event retention.
+        sql.exec(`INSERT INTO ingest_receipts(device_id, received) SELECT device_id, received FROM (
+          SELECT device_id, received, ROW_NUMBER() OVER (PARTITION BY device_id ORDER BY received DESC, seq DESC) AS ordinal
+          FROM events WHERE received >= ?) WHERE ordinal <= ?`, now - RATE_WINDOW_MS, DEVICE_RATE_LIMIT);
+        sql.exec("INSERT INTO meta VALUES ('ingest_receipts_initialized', 1)");
+      }
     });
   }
   rows(query, ...args) { return this.sql.exec(query, ...args).toArray(); }
@@ -61,10 +72,17 @@ export class Store {
       this.sql.exec('DELETE FROM app_observations WHERE expires <= ?', now);
       this.sql.exec('DELETE FROM outbox WHERE subscription_id IN (SELECT id FROM subscriptions WHERE expires <= ?)', now);
       this.sql.exec('DELETE FROM subscriptions WHERE expires <= ?', now);
+      this.sql.exec('DELETE FROM ingest_receipts WHERE received < ?', now - RATE_WINDOW_MS);
     });
   }
   ingest(event, now) {
     return this.transaction(() => {
+      const occurred = Date.parse(event.occurred_at);
+      const observations = event.kind === 'app_activity_batch' ? event.payload.observations
+        : event.kind === 'app_activity' ? [{ ...event.payload, id: event.event_id }] : [];
+      // Recheck after the bridge's asynchronous scheduling; never acknowledge an expired write or retry.
+      const oldest = Math.min(occurred, ...observations.map(item => Date.parse(item.measured_at)));
+      if (oldest + RETENTION_MS <= now) throw new RequestError('event_outside_retention');
       const body = canonical(event);
       const old = this.rows('SELECT seq, body, received FROM events WHERE device_id = ? AND event_id = ?', event.device_id, event.event_id)[0];
       if (old) {
@@ -72,13 +90,10 @@ export class Store {
         return { accepted: true, duplicate: true, received_at: new Date(old.received).toISOString() };
       }
       if (this.rows('SELECT COUNT(*) AS n FROM events')[0].n >= CAPACITY) throw new RequestError('storage_capacity_reached', 429);
-      if (this.rows('SELECT COUNT(*) AS n FROM events WHERE device_id = ? AND received >= ?', event.device_id, now - 60000)[0].n >= 120)
+      this.sql.exec('DELETE FROM ingest_receipts WHERE received < ?', now - RATE_WINDOW_MS);
+      if (this.rows('SELECT COUNT(*) AS n FROM ingest_receipts WHERE device_id = ? AND received >= ?', event.device_id, now - RATE_WINDOW_MS)[0].n >= DEVICE_RATE_LIMIT)
         throw new RequestError('device_rate_limit', 429);
-      const occurred = Date.parse(event.occurred_at);
-      const observations = event.kind === 'app_activity_batch' ? event.payload.observations
-        : event.kind === 'app_activity' ? [{ ...event.payload, id: event.event_id }] : [];
       // Expire the raw batch when its earliest member expires; normalized observations retain individual expiry.
-      const oldest = Math.min(occurred, ...observations.map(item => Date.parse(item.measured_at)));
       const row = this.rows('INSERT INTO events(device_id,event_id,kind,occurred,measured,received,expires,body) VALUES(?,?,?,?,?,?,?,?) RETURNING seq',
         event.device_id, event.event_id, event.kind, occurred, Date.parse(event.payload.measured_at || event.occurred_at), now, oldest + RETENTION_MS, body)[0];
       if (observations.length) {
@@ -99,6 +114,7 @@ export class Store {
       for (const sub of this.rows('SELECT id, filters, generation FROM subscriptions WHERE expires > ?', now)) {
         if (matches(JSON.parse(sub.filters), event)) this.sql.exec('INSERT INTO outbox(subscription_id,event_seq,due,generation) VALUES(?,?,?,?)', sub.id, row.seq, now, sub.generation);
       }
+      this.sql.exec('INSERT INTO ingest_receipts(device_id, received) VALUES(?, ?)', event.device_id, now);
       return { accepted: true, duplicate: false, received_at: new Date(now).toISOString() };
     });
   }
@@ -211,7 +227,8 @@ export class Store {
     const expiry = this.rows('SELECT MIN(expires) AS expiry FROM events')[0].expiry;
     const lease = this.rows('SELECT MIN(expires) AS expiry FROM subscriptions')[0].expiry;
     const observationExpiry = this.rows('SELECT MIN(expires) AS expiry FROM app_observations')[0].expiry;
-    const times = [due, expiry, lease, observationExpiry].filter(value => value !== null);
+    const receiptExpiry = this.rows('SELECT MIN(received) + ? AS expiry FROM ingest_receipts', RATE_WINDOW_MS + 1)[0].expiry;
+    const times = [due, expiry, lease, observationExpiry, receiptExpiry].filter(value => value !== null);
     return times.length ? Math.max(now + 250, Math.min(...times)) : null;
   }
   deliveryHealth() {

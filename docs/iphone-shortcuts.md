@@ -1,16 +1,16 @@
-# iPhone Shortcuts: Beta templates and optional modules
+# iPhone Shortcuts: installation and optional modules
 
 [English](iphone-shortcuts.md) | [简体中文](zh-CN/iphone-shortcuts.md) · [Home](../README.md)
 
-The browser-first beta is designed around three independent choices: **notifications**, **charging**, and **Focus**. Select any subset. Each requires its own system permissions, source selection, and real-trigger acceptance; enabling one must not imply consent to the others.
+DotLink provides three independent choices: **notifications**, **charging**, and **Focus**. Select any subset. Each requires its own system permissions, source selection, and real-trigger acceptance; enabling one must not imply consent to the others.
 
-**Experimental Beta: `v0.1.0-beta.1`.** The [release page](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1) provides four sanitized, signed `.shortcut` files and their checksums. All four have been re-imported on a Mac and synced to the same-account iPhone. The new Charging copy has a real-phone → Bridge → dot result. The new Notifications and Focus On/Off copies, direct iPhone file import, and independent-account installation are not yet verified end to end. These are disclosed Beta follow-ups, not claims of completed acceptance. The Focus Off re-import passed a local request check on repeat after its first attempt timed out; cold-run delays remain unresolved. See the [dated validation record](validation-record.md) and [verification](verification.md).
+The four signed `.shortcut` files and checksums remain on the [original asset page](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1), retaining its historical tag. All four were re-imported on Mac and synced to the same-account iPhone. Charging has a real automatic-trigger round and a later manual phone-to-dot upload. Direct iPhone file import and real triggers for the new Notifications and Focus On/Off copies remain pending. Focus Off initially timed out on Mac loopback and later succeeded; its cause is unresolved and proves neither inevitable iPhone failure nor reliable cold starts. See the [dated record](validation-record.md).
 
 Historical supported phone evidence is limited to iOS 27 and the sources listed in [verification](verification.md). Action names, trigger availability, language, region, and device state may differ. Proceed with a module only if its required system interface exists on your own phone. Server support does not prove phone collection.
 
-First complete service, identity, device registration, and dot subscription in [deployment](deployment.md). The Beta files include their own event envelope and HTTP upload action: **you do not need to create `DOT Bridge Uploader`, `DOT Event Sender`, or the other legacy helpers when using these files.** They preserve the working version's event fields, JSON POST, and Bearer authentication, with upload actions inlined into each module. `/setup` cannot grant iOS permissions or create unavailable triggers.
+First complete service, identity, device registration, and dot subscription in [deployment](deployment.md). The templates include their own event envelope and HTTP upload action: **you do not need to create `DOT Bridge Uploader`, `DOT Event Sender`, or the other legacy helpers when using these files.** They preserve the working version's event fields, JSON POST, and Bearer authentication, with upload actions inlined into each module. `/setup` cannot grant iOS permissions or create unavailable triggers.
 
-## Download and configure the Beta templates
+## Download and configure templates
 
 | File | Module | Import answers |
 | --- | --- | --- |
@@ -21,12 +21,14 @@ First complete service, identity, device registration, and dot subscription in [
 
 [SHA256SUMS](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/SHA256SUMS) lists the four release-file hashes. Use these specific release assets, not an exported copy already personalized with somebody's credentials.
 
-1. Open the release page in Safari on your iPhone and download only the modules you want. For Focus, download both On and Off.
-2. Open a downloaded `.shortcut` file from Files in Shortcuts and follow its import questions. Enter only your own HTTPS `/ingest` URL and upload token; Focus also asks for the mode name. The first-device ID is `iphone-primary`. This direct-phone route remains a Beta follow-up; the observed import route was Mac import followed by same-account iCloud sync.
-3. Open each imported shortcut for editing before running it. Keep its **Automation off** while configuring. If the trigger is missing, add it using the table below. On the observed iPhone, all four arrived without triggers; the editor's Search → **Automation** menu provided the required actions.
-4. Reopen saved URL/token fields to check they persisted. Ensure notification App/Title/Body variables refer to the newly added Notification trigger. For Focus, the import answer and selected system mode must match: choosing Sleep does not test a shortcut bound to Do Not Disturb.
-5. Before enabling Notifications, explicitly exclude **ChatGPT, Codex and Shortcuts** from the selected sources. Replies can become new phone notifications and loop back into the bridge. If exclusions are not reliable, keep a small explicit allowlist. Rate limiting is not loop prevention.
-6. Follow the final enable-upload step in [deployment](deployment.md), allow the requested connection only to your own Bridge, then enable one configured module and test a harmless real event. Check the result in your dot before enabling further sources. If a required trigger is absent from your system, stop that module; the template cannot add OS capabilities.
+1. Open the asset page in Safari on iPhone and **download only Charging first**. Open the `.shortcut` from Files and import it. Direct phone import still requires your check; the observed historical route was Mac import followed by same-account iCloud sync.
+2. Enter the complete `https://your-host/ingest` URL and **raw device token**, without `Bearer`, surrounding spaces or newlines. The template already adds the authentication prefix. Keep `iphone-primary` consistent with the server registration. Never enter GitHub or Cloudflare management credentials.
+3. Save and leave the editor, then reopen to confirm the URL/token persisted before running. Check the colon in `https://` and the `/ingest` suffix. Visible text during editing does not prove it was saved. Keep **Automation off** while configuring.
+4. Complete the subscription and enable server ingestion as described in [deployment](deployment.md). Run Charging manually once and allow access to your own Bridge. Confirm the new Bridge record and matching dot result. Then add and enable Charger `Connects or Disconnects`, and test one locked-screen connection/disconnection. A manual run verifies upload, not an automatic trigger.
+5. If wanted, import Focus On and Off next, with the same URL, raw token and identical mode name. Bind the same system mode’s on/off triggers; toggling Sleep cannot validate a Do Not Disturb binding. Toggle the actual mode and confirm true/false results.
+6. Add Notifications last if wanted, starting with one permitted source. If its trigger is missing, add Notification from the editor’s Search → **Automation** menu and rebind App/Title/Body to that trigger. **Exclude ChatGPT, Codex and Shortcuts**, and leave no empty title filter. Generate harmless notification content from another device and confirm its source and permitted fields before expanding sources.
+
+If the required trigger is absent, stop that module; a template cannot add OS capabilities. Diagnose only the failed step using [troubleshooting](verification.md), distinguishing URL/token, first-use permissions, network, automation and delivery.
 
 If your system cannot open the file directly, Mac import and same-account iCloud synchronization is the tested import fallback, with phone trigger configuration still required. No iCloud share links or automatic trigger preservation are promised.
 
@@ -39,7 +41,7 @@ If your system cannot open the file directly, Mac import and same-account iCloud
 
 Immediately expand a newly added trigger and switch **Automation off** during setup; the native editor may enable it by default. Do not enable an unconfigured shortcut or reuse a loopback test URL. Complete first-use permissions and the acceptance checks below before relying on that module.
 
-Labels and availability may differ by system. The Beta's current evidence does not establish that every module or installation route works on another phone.
+Labels and availability may differ by system. The current evidence does not establish that every module or installation route works on another phone.
 
 ## Advanced manual path: build the legacy helpers
 
@@ -142,7 +144,7 @@ There is no promise of all-app coverage or automatic inclusion of future install
 
 ### 6. Optional Focus on/off
 
-The Beta Focus module uses **two companion templates**, On and Off. Use the same upload URL, device token and Focus name in both, then choose the matching system Focus trigger on the iPhone. On must use `Is Turned On` with Boolean `true`; Off must use `Is Turned Off` with Boolean `false`. Import answers do not select or authorize the system trigger. Keep both disabled until personalized and tested. Reading the currently active Focus does not reliably identify the mode that just turned off. This pair's new-copy real-trigger acceptance remains pending; the manual alternative is below.
+The Focus module uses **two companion templates**, On and Off. Use the same upload URL, device token and Focus name in both, then choose the matching system Focus trigger on the iPhone. On must use `Is Turned On` with Boolean `true`; Off must use `Is Turned Off` with Boolean `false`. Import answers do not select or authorize the system trigger. Keep both disabled until personalized and tested. Reading the currently active Focus does not reliably identify the mode that just turned off. This pair's new-copy real-trigger acceptance remains pending; the manual alternative is below.
 
 Create `DOT Focus Sender` accepting a dictionary with text `name` and Boolean `active`. Read actual ISO 8601 time into `measured_at`:
 

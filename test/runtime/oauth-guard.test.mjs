@@ -1,15 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import { build } from 'esbuild';
 import { Miniflare, Log, LogLevel, Response, convertV4MiniflareOptions } from 'miniflare';
 
 let bundle;
-async function runtime(t, respond) {
+async function runtime(t, respond, { onLog } = {}) {
   bundle ??= build({ entryPoints: ['src/worker.mjs'], bundle: true, write: false, format: 'esm', platform: 'neutral',
     conditions: ['workerd', 'worker', 'browser'], mainFields: ['module', 'main'], external: ['cloudflare:*', 'node:*'] });
   let outbound = 0;
-  const mf = new Miniflare(convertV4MiniflareOptions({ host: '127.0.0.1', port: 0, log: new Log(LogLevel.ERROR), workers: [{
+  const mf = new Miniflare(convertV4MiniflareOptions({ host: '127.0.0.1', port: 0, log: new Log(LogLevel.ERROR),
+    ...(onLog ? { handleStructuredLogs: onLog } : {}), workers: [{
     name: 'oauth-guard-test', modules: true, script: (await bundle).outputFiles[0].text, compatibilityDate: '2026-09-30',
     compatibilityFlags: ['nodejs_compat', 'global_fetch_strictly_public'], kvNamespaces: ['OAUTH_KV'],
     durableObjects: { BRIDGE: { className: 'PhoneBridge', useSQLite: true } },
@@ -25,6 +27,23 @@ async function runtime(t, respond) {
 }
 const post = (mf, path, body, type = 'application/x-www-form-urlencoded') => mf.dispatchFetch(`https://bridge.example.com${path}`,
   { method: 'POST', headers: { 'content-type': type }, body });
+
+test('production OAuth error logging excludes attacker-controlled registration fields', { timeout: 20000 }, async t => {
+  const logs = [];
+  let received;
+  const logged = new Promise(resolve => { received = resolve; });
+  const { mf } = await runtime(t, undefined, { onLog(log) {
+    logs.push(log.message);
+    if (/OAuth error response|oauth_error_response/.test(log.message)) received();
+  } });
+  const response = await post(mf, '/oauth/register', JSON.stringify({ redirect_uris: ['https://client.example/callback'],
+    token_endpoint_auth_method: 'SYNTHETIC_PRIVATE_MARKER' }), 'application/json');
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).error, 'invalid_client_metadata');
+  await Promise.race([logged, delay(1000).then(() => { throw new Error('Expected OAuth rejection log'); })]);
+  assert.doesNotMatch(logs.join('\n'), /SYNTHETIC_PRIVATE_MARKER/);
+  assert.ok(logs.some(message => message.includes('oauth_error_response')));
+});
 
 test('production OAuth rejects oversized and excessive-field forms before client lookup', { timeout: 20000 }, async t => {
   const { mf, outbound } = await runtime(t);

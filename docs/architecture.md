@@ -47,7 +47,7 @@ GitHub only verifies the configured owner's numeric ID. No repository permission
 
 This is a single-owner self-hosted model. Multiple device aliases do not imply multi-tenant isolation or implemented collectors for other platforms.
 
-The browser-first candidate adds a bilingual `/setup` guide. Its Web Crypto credential generation stays in the browser; the user applies values in Cloudflare. It does not accept cloud administration credentials, manage existing devices, or rotate existing subscription keys. See [deployment](deployment.md).
+DotLink includes a bilingual `/setup` guide. Its Web Crypto credential generation stays in the browser; the user applies values in Cloudflare. It does not accept cloud administration credentials, manage existing devices, or rotate existing subscription keys. See [deployment](deployment.md).
 
 ## Four meanings of success
 

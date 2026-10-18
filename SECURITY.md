@@ -22,13 +22,17 @@ The bilingual `/setup` guide is for a fresh deployment. Device tokens and `BRIDG
 
 Do not replace an existing `DEVICE_REGISTRY` or `BRIDGE_SEAL_KEY` with fresh setup output. The registry may contain other devices, and changing the sealing key prevents decryption of existing subscription keys. The guide does not prove that a deployment is unused. Confirm that fact in your own dashboard before applying values. Protect generated credentials from screen capture, clipboard sharing, shortcut exports, and public reports.
 
-## Public OAuth resource boundaries (local candidate)
+## Public OAuth resource boundaries
 
-The unpublished candidate checks OAuth body, query and field bounds before provider parsing, external client metadata or authorization-state consumption. Registration and token bodies are capped at 64 KiB; consent POST is capped at 4 KiB. Encoded queries are capped at 8 KiB; query/form entry and value bounds are listed in the [protocol reference](docs/protocol.md). Body overflow returns `413`, query overflow `414`, and field-bound errors `400`.
+The implementation checks OAuth body, query and field bounds before provider parsing, external client metadata or authorization-state consumption. Registration and token bodies are capped at 64 KiB; consent POST is capped at 4 KiB. Encoded queries are capped at 8 KiB; query/form entry and value bounds are listed in the [protocol reference](docs/protocol.md). Body overflow returns `413`, query overflow `414`, and field-bound errors `400`.
 
 Five separate route budgets use aligned UTC minute/day windows in a named Durable Object apart from the phone-data object. The budget table has at most five rows and stores no IP address. A rejection returns `429` with `Retry-After`, does not increment counters and does not enter the OAuth provider; guard storage failures return `503`. This bounds admitted work, but anonymous clients can still exhaust a route’s current window. It is not per-source throttling, DDoS protection or a billing cap. Rejected traffic still consumes platform resources, and Cloudflare quotas apply independently.
 
 Subscription cancellation/re-creation and expiry/re-creation receive a new generation; late callback results cannot modify that new lifecycle. Renewal of an unexpired subscription retains its generation. A request already in flight cannot be recalled. Keep real revocation and upgrade verification separate from local race regression tests.
+
+## OAuth logging boundary
+
+The application’s provider `onError` logs only the fixed `oauth_error_response` type and HTTP status, excluding request fields from that callback. The pinned `@cloudflare/workers-oauth-provider@1.2.1` still has an independent `console.warn` on CIMD fetch failures that may include the client metadata URL and validation-error details; it bypasses this callback. Public CIMD metadata URLs and their content must contain no secrets. Restrict Worker log access and retention. Prefer the existing DCR path for new connections while preserving existing CIMD compatibility. This is not a guarantee that every dependency log omits request parameters.
 
 ## Data destinations and retention
 
@@ -60,7 +64,7 @@ Disconnect the bridge in ChatGPT and verify subscriptions stop. Delivery recheck
 
 ## Dependency audit status
 
-On 2026-10-12, the unpublished candidate’s full npm audit reported 0 vulnerabilities after updating the locked Wrangler toolchain to 4.149.0 and sharp to 0.35.5. This removes the three high audit entries associated with the older toolchain; the published `v0.1.0-beta.1` keeps its old lockfile and historical advisory disclosure. Miniflare remains an alpha transitive dependency selected by Wrangler. This result neither establishes that all vulnerabilities are absent nor validates a live deployment; see [third-party notices](THIRD_PARTY_NOTICES.md) and the [dated validation record](docs/validation-record.md).
+On 2026-10-12, the revised source’s full npm audit reported 0 vulnerabilities after updating the locked Wrangler toolchain to 4.149.0 and sharp to 0.35.5. This removes the three high audit entries associated with the older toolchain; the published `v0.1.0-beta.1` keeps its old lockfile and historical advisory disclosure. Miniflare remains an alpha transitive dependency selected by Wrangler. This result neither establishes that all vulnerabilities are absent nor validates a live deployment; see [third-party notices](THIRD_PARTY_NOTICES.md) and the [dated validation record](docs/validation-record.md).
 
 ## Publication and reporting
 

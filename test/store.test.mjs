@@ -264,7 +264,7 @@ test('legacy SQLite migration preserves queued data and is idempotent across con
 });
 
 // Seed bounded fixtures in SQLite so capacity checks exercise Store without thousands of uploads.
-function seedBoundaryEvents(s, count, device_id, received, expires) {
+function seedBoundaryEvents(s, count, device_id, received, expires, admitted = false) {
   const occurred = expires - RETENTION_MS;
   const input = event('notification', { app: 'Synthetic', body: 'capacity fixture' }, occurred, device_id);
   s.sql.exec(`WITH RECURSIVE fixture(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM fixture WHERE n < ?)
@@ -272,12 +272,15 @@ function seedBoundaryEvents(s, count, device_id, received, expires) {
     SELECT ?, printf('00000000-0000-4000-8000-%012d', n), 'notification', ?, ?, ?, ?,
       json_set(?, '$.event_id', printf('00000000-0000-4000-8000-%012d', n)) FROM fixture`,
   count, device_id, occurred, occurred, received, expires, JSON.stringify(input));
+  if (admitted) s.sql.exec(`WITH RECURSIVE fixture(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM fixture WHERE n < ?)
+    INSERT INTO ingest_receipts(device_id,received) SELECT ?, ? FROM fixture`, count, device_id, received);
 }
 function boundaryState(s) {
   return {
     counts: s.rows(`SELECT (SELECT COUNT(*) FROM events) AS events,
       (SELECT COUNT(*) FROM app_observations) AS observations,
-      (SELECT COUNT(*) FROM outbox) AS outbox`)[0],
+      (SELECT COUNT(*) FROM outbox) AS outbox,
+      (SELECT COUNT(*) FROM ingest_receipts) AS receipts`)[0],
     sequence: s.rows('SELECT * FROM sqlite_sequence ORDER BY name'),
     subscriptions: s.rows('SELECT * FROM subscriptions ORDER BY id'),
     outbox: s.rows('SELECT * FROM outbox ORDER BY subscription_id, event_seq'),
@@ -296,7 +299,7 @@ function boundaryObservation() {
 
 test('device rate permits event 120, rejects 121 atomically and recovers after the rolling minute', t => {
   const s = store(t); subscribe(s);
-  seedBoundaryEvents(s, 119, 'iphone-primary', now, now + RETENTION_MS);
+  seedBoundaryEvents(s, 119, 'iphone-primary', now, now + RETENTION_MS, true);
   const last = event('notification', { app: 'Synthetic', body: 'event 120' });
   assert.equal(s.ingest(last, now).duplicate, false);
   assert.equal(s.rows("SELECT COUNT(*) AS n FROM events WHERE device_id = 'iphone-primary'")[0].n, 120);
@@ -313,6 +316,62 @@ test('device rate permits event 120, rejects 121 atomically and recovers after t
   assert.equal(s.ingest(blocked, now + 60001).duplicate, false);
   assert.equal(s.rows('SELECT COUNT(*) AS n FROM app_observations')[0].n, 1);
   assert.equal(s.rows('SELECT COUNT(*) AS n FROM outbox')[0].n, 3);
+});
+
+test('raw event expiry cannot reset the rolling device admission budget', t => {
+  const s = store(t);
+  for (let i = 0; i < 120; i++) {
+    const received = now + i * 2;
+    const input = validateEvent({ v: 1, event_id: crypto.randomUUID(), device_id: 'iphone-primary', kind: 'notification',
+      occurred_at: iso(received - RETENTION_MS + 1), payload: { app: 'Synthetic' } }, received);
+    s.cleanup(received);
+    assert.equal(s.ingest(input, received).accepted, true);
+  }
+  s.cleanup(now + 240);
+  assert.equal(s.events({}, now + 240).events.length, 0);
+  assert.throws(() => s.ingest(event('notification', { app: 'Synthetic' }), now + 240), capacityError('device_rate_limit'));
+  assert.equal(s.nextAlarm(now + 240), now + 60001);
+  s.cleanup(now + 60000);
+  assert.throws(() => s.ingest(event('notification', { app: 'Synthetic' }), now + 60000), capacityError('device_rate_limit'));
+  s.cleanup(now + 60001);
+  assert.equal(s.ingest(event('notification', { app: 'Synthetic' }), now + 60001).accepted, true);
+  s.cleanup(now + RETENTION_MS);
+  assert.equal(s.nextAlarm(now + RETENTION_MS), null);
+});
+
+test('events expiring between validation and persistence cannot be acknowledged or consume admission', t => {
+  const almostExpired = iso(now - RETENTION_MS + 1);
+  const observation = { id: crypto.randomUUID(), app: 'Synthetic', transition: 'opened', measured_at: almostExpired };
+  const inputs = [
+    event('notification', { app: 'Synthetic' }, now - RETENTION_MS + 1),
+    validateEvent({ ...event('app_activity', { app: 'Synthetic', transition: 'opened', source: 'shortcuts_app_trigger' }),
+      payload: { app: 'Synthetic', transition: 'opened', source: 'shortcuts_app_trigger', measured_at: almostExpired } }, now),
+    boundaryBatch([observation]),
+  ];
+  for (const input of inputs) {
+    const s = store(t), before = boundaryState(s);
+    assert.throws(() => s.ingest(input, now + 1), /event_outside_retention/);
+    assert.deepEqual(boundaryState(s), before);
+    assert.equal(s.ingest(input, now).accepted, true);
+    const accepted = boundaryState(s);
+    assert.throws(() => s.ingest(input, now + 1), /event_outside_retention/);
+    assert.deepEqual(boundaryState(s), accepted);
+  }
+});
+
+test('legacy admission migration survives raw expiry and does not refill on reactivation', t => {
+  const s = store(t);
+  seedBoundaryEvents(s, 60, 'iphone-primary', now, now + 1);
+  // Model the old schema while retaining real event rows for the upgrade.
+  s.sql.exec('DROP TABLE IF EXISTS ingest_receipts');
+  s.sql.exec("DELETE FROM meta WHERE key = 'ingest_receipts_initialized'");
+  const migrated = new Store(s.sql, s.transaction, now);
+  const reopened = new Store(s.sql, s.transaction, now);
+  reopened.cleanup(now + 1);
+  for (let i = 0; i < 60; i++)
+    assert.equal(reopened.ingest(event('notification', { app: 'Synthetic' }), now + 1).accepted, true);
+  assert.throws(() => reopened.ingest(event('notification', { app: 'Synthetic' }), now + 1), capacityError('device_rate_limit'));
+  assert.equal(migrated.events({}, now + 1).events.length, 25);
 });
 
 test('event capacity permits event 10000, preserves retries and recovers after retention cleanup', t => {

@@ -2,7 +2,7 @@
 
 [English](protocol.md) | [简体中文](zh-CN/protocol.md) · [Home](../README.md)
 
-This page describes the unchanged `v:1` event envelope and the unpublished local candidate’s updated admission and subscription behavior. The published `v0.1.0-beta.1` does not include those local fixes. JSON examples are synthetic; real uploads need actual occurrence times and fresh IDs for new events.
+This page describes the current source’s `v:1` envelope, admission rules and subscription behavior. Updating these source instructions does not move the historical tag. JSON examples are synthetic; real uploads need actual times and fresh IDs for new events.
 
 ## Upload
 
@@ -38,19 +38,20 @@ The device ID must match its upload token; changing the JSON ID cannot impersona
 | `app_activity_batch` | `source`, `measured_at`, 1–200 `observations`, each with its own `id/app/transition/measured_at` | No phone local queue or scheduled upload. |
 | `health` | `metric`, `value`, `unit`, `measured_at`; exact validation in `src/protocol.mjs` | Collection not enabled. |
 
-Times are ISO 8601 with a time zone. `occurred_at` must be within the seven-day retention window, allowing at most five minutes of future clock skew. App batch observations also follow this window. Other payload `measured_at` fields must be valid dates and at most five minutes later than occurrence; their oldest allowed date is not uniformly restricted, so consumers must preserve actual age and stale state. Unknown fields are rejected. Build dictionaries rather than concatenating bodies into JSON strings.
+Times use ISO 8601 with a time zone. `occurred_at` must be strictly later than receipt time minus seven days and no later than receipt time plus five minutes. Single `app_activity.measured_at` and each batch observation’s `measured_at` must also be strictly later than receipt time minus seven days, and no later than both receipt time plus five minutes and `occurred_at` plus five minutes. A value exactly seven days old is rejected. The storage transaction rechecks the earliest event/observation expiry at its current time; expiry during an intervening wait returns `event_outside_retention`, without `202` acceptance or a new-event quota charge. Other payload measurement dates are valid dates no more than five minutes after occurrence, without a uniform oldest-date bound; consumers must preserve actual age and stale state. Unknown fields are rejected. Build native dictionaries rather than concatenating JSON strings.
 
 `202` with `{accepted:true, duplicate:false, received_at:...}` means persistent receipt; the same device/ID/content yields `duplicate:true`. Changed content under the same ID returns `409`; invalid credentials `401`; device identity mismatch `403`; disabled ingestion `503`. Use the returned error category instead of retrying every error.
 
 ## Capacity and retention
 
-- Maximum request size: 64 KiB. Per device: 120 new events per minute. Event database: 10,000 records before cleanup.
+- Maximum request size: 64 KiB. Per device: 120 successfully accepted new events per rolling 60 seconds. Event database: 10,000 records before cleanup.
+- Separate quota metadata stores only device ID and receipt time. Receipts exactly 60 seconds old still count; older receipts can be removed. Early business-event expiry/cleanup does not release this quota. Duplicates and failed transactions do not consume a new-event allowance. This short-lived metadata contains no event bodies.
 - Capacity/rate limits return `429`. Duplicates are recognized before capacity checks, but there is no reliable phone retry queue.
 - App observations have an additional 50,000-record limit; raw batches expire according to their earliest observation.
 - Business retention is seven days based on occurrence, excluding platform backups and dot copies.
 - Up to 32 registered devices under one owner and 8 event subscriptions.
 
-## OAuth admission limits (local candidate)
+## OAuth admission limits
 
 The application checks these limits before OAuth provider parsing, external client-metadata lookup, or authorization-state consumption:
 

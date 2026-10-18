@@ -1,16 +1,16 @@
-# iPhone 快捷指令：Beta 模板与可选模块
+# iPhone 快捷指令：安装与可选模块
 
 [English](../iphone-shortcuts.md) | [简体中文](iphone-shortcuts.md) · [首页](../../README.zh-CN.md)
 
-浏览器优先 beta 将通知、充电、Focus 分成三个独立可选模块，可选择任意组合。每项都需要本人选择来源、完成系统授权并验证真实触发；选择一项不等于同意其他采集。
+DotLink 将通知、充电、Focus 分成三个独立可选模块，可选择任意组合。每项都需要本人选择来源、完成系统授权并验证真实触发；选择一项不等于同意其他采集。
 
-**实验性 Beta：`v0.1.0-beta.1`。** [发布页](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)提供四份脱敏、已签名的 `.shortcut` 文件及校验值。四份均已在 Mac 重新导入并同步到同账号 iPhone；新的 Charging 副本已有真机 → Bridge → dot 的对应结果。新 Notifications、Focus On／Off 副本、iPhone 直接文件导入及独立账号安装尚未完成端到端验证，作为 Beta 后续项明确披露，不计为已通过。Focus Off 重新导入后首次请求超时，重复请求通过；首次运行延迟仍未解决。详见[分日期验证记录](validation-record.md)和[验证说明](verification.md)。
+四份签名 `.shortcut` 与校验值继续使用[原始附件页](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)，历史标签保留。四份均曾在 Mac 重新导入并同步到同账号 iPhone；Charging 曾有真实自动触发和另一次手动上传至 dot 的结果。直接 iPhone 文件导入、新 Notifications 与 Focus On/Off 的实际触发仍待验证。Focus Off 在 Mac 本地首次请求曾超时、重复请求成功；原因尚未确定，不能据此断言手机必失败或冷启动已可靠。详见[日期化记录](validation-record.md)。
 
 历史真机证据限定于 iOS 27 及[验证说明](verification.md)记录的来源。快捷指令动作名称和通知触发器可用性随 iOS、语言、地区及设备状态变化。只有在自己的 iPhone 实际看到对应系统入口，才能继续该项设置；服务器支持某种事件，不等于手机已经能够采集它。
 
-先完成 [部署文档](deployment.md) 中的服务、身份、设备登记与 dot 订阅。Beta 文件已内置事件封装和 HTTP 上传动作，**使用这些文件无需再创建 `DOT Bridge Uploader`、`DOT Event Sender` 等旧辅助快捷指令**。它们沿用已成功方案的事件字段、JSON POST 和 Bearer 认证，将上传动作放入各模块。`/setup` 不能授予系统权限或补出缺失触发器。
+先完成 [部署文档](deployment.md) 中的服务、身份、设备登记与 dot 订阅。模板已内置事件封装和 HTTP 上传动作，**使用这些文件无需再创建 `DOT Bridge Uploader`、`DOT Event Sender` 等旧辅助快捷指令**。它们沿用已成功方案的事件字段、JSON POST 和 Bearer 认证，将上传动作放入各模块。`/setup` 不能授予系统权限或补出缺失触发器。
 
-## 下载并配置 Beta 模板
+## 下载并配置模板
 
 | 文件 | 模块 | 导入时填写 |
 | --- | --- | --- |
@@ -21,12 +21,14 @@
 
 [SHA256SUMS](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/SHA256SUMS) 列出四份发布文件的哈希。使用这些 Release 附件，不要使用别人已经填写私人凭据后再次导出的成品。
 
-1. 在 iPhone 的 Safari 打开发布页，下载需要的模块；使用 Focus 时同时下载 On 和 Off。
-2. 从“文件”打开下载的 `.shortcut`，在“快捷指令”中按导入问题填写自己的 HTTPS `/ingest` 地址与上传令牌；Focus 还需填写模式名称。首次设备 ID 为 `iphone-primary`。直接手机导入仍是 Beta 后续验证项，已观察到的路径是 Mac 导入后由同账号 iCloud 同步。
-3. 先打开每份导入文件的编辑器，不要直接运行；配置期间保持 **Automation 关闭**。缺少触发器时按下表补加。所测 iPhone 上四份同步后均未携带触发器，可通过编辑器 Search → **Automation** 添加。
-4. 重新打开保存后的地址／令牌字段，核对确实保存。通知的 App／Title／Body 变量应指向新加的 Notification 触发器。Focus 导入答案须与所选系统模式一致：切换 Sleep 不能验收绑定“勿扰”的模板。
-5. 开启 Notifications 前，明确排除 **ChatGPT、Codex 和快捷指令** 来源。回复可能产生新手机通知并再次转发形成循环。无法可靠排除时，保持少量明确来源的白名单；限流不等于防循环。
-6. 按[部署文档](deployment.md)的最后一步开启服务上传，仅允许连接本人的 Bridge，再开启一个已配置模块，用无私人内容的真实事件测试。先核对 dot 的结果，再增加来源；系统没有所需触发器时停止该模块，模板不能补充操作系统能力。
+1. 在 iPhone 的 Safari 打开附件页，**先只下载 Charging**。从“文件”打开 `.shortcut` 并导入。直接手机导入仍需本人验证；历史已观察到的是 Mac 导入后同账号 iCloud 同步。
+2. 填入完整的 `https://自己的地址/ingest` 和**原始设备 token**：不加 `Bearer`，不带首尾空格或换行。模板已添加认证前缀。保持 `iphone-primary` 与服务器登记一致；不要填写 GitHub／Cloudflare 管理凭据。
+3. 保存退出编辑器，重新打开确认 URL、token 已保存，再运行。特别检查 `https://` 中的冒号及 `/ingest`；编辑器内暂时可见的输入不等于已保存。配置期间 **Automation 关闭**。
+4. 按[部署文档](deployment.md)完成订阅并开启服务上传，先手动运行 Charging 一次，允许它访问自己的 Bridge。确认 Bridge 新记录及 dot 对应结果，再补加 Charger `Connects or Disconnects` 触发器、启用自动化，锁屏插入／拔出充电器各一次。手动运行只验证上传，不替代自动触发。
+5. 需要 Focus 时再导入 On／Off 两份，使用相同 URL、原始 token 和完全一致的模式名称。为同一模式分别选择开启和关闭触发器；切换 Sleep 不能验证绑定“勿扰”的模板。实际切换该模式并核对 true／false。
+6. 需要通知时最后导入 Notifications，从一个本人允许的来源开始。若触发器缺失，在编辑器 Search → **Automation** 中补加 Notification，然后把 App／Title／Body 重新绑定到这个触发器。**排除 ChatGPT、Codex 和快捷指令**，不留空的标题筛选条件。由另一个设备产生一条无私人内容的通知，核对来源与允许的正文；通过后再扩展来源。
+
+系统缺少所需触发器时停止该模块；模板不能补充操作系统能力。失败只检查当前步骤，按[排查表](verification.md)区分 URL／token、首次权限、网络、自动化与投递。
 
 手机无法直接打开文件时，可尝试已验证过的 Mac 导入与同账号 iCloud 同步路径，随后仍需在手机配置触发器。本版不提供 iCloud 分享链接，也不承诺触发器自动保留。
 
@@ -39,7 +41,7 @@
 
 设置期间立即展开新触发器，把 **Automation 关闭**；原生编辑器可能默认开启新添加的触发器。不要开启未配置副本，也不要沿用本机回环测试 URL。完成首次系统授权和下文验收后，才能依赖该模块。
 
-名称和入口可用性可能随系统不同；Beta 的现有证据不能证明每个模块或安装路径都能在另一台手机工作。
+名称和入口可用性可能随系统不同；现有证据不能证明每个模块或安装路径都能在另一台手机工作。
 
 ## 高级手工路径：创建旧版辅助快捷指令
 
@@ -143,7 +145,7 @@
 
 ### 6. 可选：Focus 开启与关闭
 
-Beta 的 Focus 模块采用 **On／Off 两份配套模板**。两份均填写相同的上传地址、手机令牌和 Focus 名称，再在 iPhone 中选择对应的系统专注模式触发器。On 使用 `Is Turned On` 与布尔值 `true`，Off 使用 `Is Turned Off` 与布尔值 `false`。导入问题不会自动选择或授权系统触发器；完成个人配置和测试前，两份都应保持停用。读取“当前专注模式”不能可靠识别刚刚关闭的模式。这对新副本的真实触发验收仍待完成，下面是手工替代路径。
+Focus 模块采用 **On／Off 两份配套模板**。两份均填写相同的上传地址、手机令牌和 Focus 名称，再在 iPhone 中选择对应的系统专注模式触发器。On 使用 `Is Turned On` 与布尔值 `true`，Off 使用 `Is Turned Off` 与布尔值 `false`。导入问题不会自动选择或授权系统触发器；完成个人配置和测试前，两份都应保持停用。读取“当前专注模式”不能可靠识别刚刚关闭的模式。这对新副本的真实触发验收仍待完成，下面是手工替代路径。
 
 新建 `DOT Focus Sender`，输入包含 `name`（文本）和 `active`（布尔值）的字典。读取当前 ISO 8601 日期作为 `measured_at`，构造：
 

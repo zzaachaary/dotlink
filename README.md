@@ -4,7 +4,7 @@
 
 Send selected iPhone notifications, charging changes, and Focus changes to your own ChatGPT dot using iOS Shortcuts and a self-hosted Cloudflare bridge.
 
-**Experimental Beta `0.1.0-beta.1`.** Download the four sanitized Apple-signed templates from the [first Beta release](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1). Charging has completed one real iPhone → Bridge → dot round. The notification and Focus templates follow the existing personal bridge’s event contract; remaining device checks are disclosed in the [validation record](docs/validation-record.md). This is self-hosted, source-available software under PolyForm Noncommercial 1.0.0. Setup requires your own accounts and manual phone configuration.
+**DotLink first-edition self-hosted installation.** The four sanitized Apple-signed templates remain on the [original asset page](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1); the historical tag and package version remain `0.1.0-beta.1`. This guide uses the repository’s current source. A complete new installation and your selected phone triggers still require manual acceptance; stable reliability is not yet established. See the [validation record](docs/validation-record.md) for passed and pending checks. DotLink is source-available under PolyForm Noncommercial 1.0.0 and requires your own accounts and manual phone configuration.
 
 DotLink is for one owner and their registered devices. Historical phone testing used iOS 27 and selected sources. It is not affiliated with or endorsed by Apple, Cloudflare, GitHub, or OpenAI.
 
@@ -31,24 +31,22 @@ DotLink is for one owner and their registered devices. Historical phone testing 
 | Offline and recovery | No persistent phone outbox; failed phone uploads may be lost. No cursor replay. Real cross-day renewal remains unverified. |
 | Coverage | No all-app guarantee, automatic enrollment of future apps, historical chat access, or full SMS/iMessage/attachment guarantee. |
 
-Historical results were recorded through 2026-10-01 and documented on 2026-10-02. They are not a retest of this release candidate. See [verification](docs/verification.md) and the [validation record](docs/validation-record.md).
+Historical results were recorded through 2026-10-01 and documented on 2026-10-02. They are not a complete retest of the current source and four templates. See [verification](docs/verification.md) and the [validation record](docs/validation-record.md).
 
 ## Install on your own accounts
 
 You need an iPhone with the required iOS 27 Shortcuts triggers, your own Cloudflare and GitHub accounts, and a ChatGPT dot account that can connect to custom MCP services and subscribe to MCP Events. An ordinary model API or a client that only calls MCP tools is not equivalent.
 
-**Local candidate, not published (2026-10-12).** The steps below describe the revised setup flow under local validation. The public `v0.1.0-beta.1` tag and Deploy button still use the original code and required-secret form; they do not include these fixes. A separate cloud installation and the remaining phone checks must pass before a stable release. Keep the existing Beta tag unchanged.
+Complete one installation in this order. Continue after each step passes; troubleshoot only the step that fails:
 
-The revised setup path is browser-first:
+1. Use [Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) to create a separate Worker in **your own Cloudflare account**, initially without variables or Secrets.
+2. Open the new Worker’s `/setup`, select a language, and privately save your generated device credentials and sealing key.
+3. Create a GitHub OAuth App, then enter the **3 variables and 4 Secrets** in the [deployment guide](docs/deployment.md). Keep `ENABLE_INGEST=false` and require `/health` to return `200`.
+4. Connect the target dot to `/mcp` through OAuth, read the device, and create a `phone.event` subscription with a valid expiry.
+5. **Import only Charging first.** Enter your complete HTTPS `/ingest` URL and raw device token (no `Bearer` prefix or surrounding whitespace), save, and reopen to check. Enable server ingestion, run it manually once, complete first-use permissions, and compare the Bridge record and dot response.
+6. After that manual pass, enable Charging automation and test one locked-screen connection and disconnection. Then add Focus On/Off and one notification source if wanted, using the [phone guide](docs/iphone-shortcuts.md).
 
-1. Deploy the reviewed candidate to a separate Worker in **your own Cloudflare account**, initially without variables or Secrets. Only `/setup` and its static assets are available; unconfigured service routes return `503`. Use the [deployment guide](docs/deployment.md) to select the candidate, because the public button still targets the published Beta.
-2. Open your Worker's `/setup`, choose English or 简体中文, and follow its guide. It generates fresh device credentials and a sealing key locally in your browser using Web Crypto.
-3. Create your own GitHub OAuth App using this Worker’s `/callback`, then enter the variables and Secrets yourself in the Cloudflare dashboard. Keep `ENABLE_INGEST=false` and verify `/health`. The guide does not receive a Cloudflare API token or GitHub Client Secret.
-4. Connect your own dot to `/mcp`, complete owner authorization, and establish a `phone.event` subscription.
-5. Choose any of the three independent modules: notifications, charging, or Focus. Download the [signed templates](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1), then follow the [phone import and trigger setup](docs/iphone-shortcuts.md).
-6. Enable upload only after configuration, then verify a harmless synthetic event and the real triggers you selected, including the target dot's response.
-
-[Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) starts from this repository. The button currently uses the published Beta and cannot test the unpublished candidate. Its revised first-deployment flow still requires an isolated cloud installation; the existing personal deployment is not evidence that every fresh installation works.
+Cloudflare Hosted Deploy, fresh resource creation and `/setup` generation from the same first-edition source lineage passed on 2026-10-15. Owner OAuth, dot connection and phone triggers were not all completed on that new installation. A different isolated instance has real OAuth, subscription, synthetic-event and one manual iPhone Charging success; those results cannot be combined into a complete new-installation pass.
 
 Use the default `workers.dev` address; buying a domain is not required. Neither that address nor a custom domain guarantees mainland-China reachability or changes platform availability. Cloudflare and ChatGPT usage may incur costs; no free-service or uptime guarantee is made.
 

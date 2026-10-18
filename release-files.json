@@ -68,6 +68,7 @@
   "src/worker.mjs",
   "test/app-usage.test.mjs",
   "test/auth.test.mjs",
+  "test/configure-identity.test.mjs",
   "test/consent-browser.mjs",
   "test/deployment-config.test.mjs",
   "test/enrollment-config.test.mjs",

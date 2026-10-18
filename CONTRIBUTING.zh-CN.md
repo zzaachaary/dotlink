@@ -4,7 +4,7 @@
 
 欢迎改进可靠性、安装体验、文档与独立平台采集端。开始前请读 [架构](docs/zh-CN/architecture.md)、[安全说明](SECURITY.zh-CN.md) 和 [路线图](docs/zh-CN/roadmap.md)。
 
-当前为实验性 [Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)，安装和设备验证仍有明确的后续项。可在 [Issues](https://github.com/zzaachaary/dotlink/issues) 提交可复现报告，在 [Pull requests](https://github.com/zzaachaary/dotlink/pulls) 提交范围集中的改动；报告不应包含私人事件或凭据。
+首版的安装和设备验证仍有明确后续项，见[验证记录](docs/zh-CN/validation-record.md)。可在 [Issues](https://github.com/zzaachaary/dotlink/issues) 提交可复现报告，在 [Pull requests](https://github.com/zzaachaary/dotlink/pulls) 提交范围集中的改动；报告不应包含私人事件或凭据。
 
 ## 本地开发
 

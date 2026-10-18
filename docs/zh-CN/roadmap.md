@@ -8,13 +8,13 @@
 
 当前 Bridge、通用 webhook 编排、自建 API 助手和伴侣 App 的比较，以及服务交付边界，见[常见问题](faq.md)。
 
-## 当前实验性 Beta：自己的账号，浏览器优先
+## 当前首版：自己的账号，浏览器优先
 
 目标主线为官方 Deploy to Cloudflare → 自己 Worker 的双语 `/setup` → 本人手动填写控制台变量／Secrets、GitHub OAuth App → 自己的 dot 连接 → 独立可选通知、充电、Focus 模块。
 
 向导通过 Web Crypto 在浏览器本地生成凭据，不接收 Cloudflare API Token 或 GitHub Client Secret，仅适用于全新部署。控制台变量应在重复部署后保留；不能静默覆盖 registry 或封装密钥。默认 `workers.dev` 无需购买域名，但不保证任何地区可达。
 
-[Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)包含 Bridge、双语浏览器指南，以及 Notifications、Charging、Focus On、Focus Off 四份脱敏签名文件。四份均已通过 Mac 重新导入与同账号 iPhone 同步，手机触发器仍须补加；新的 Charging 副本已有真机 → Bridge → dot 的对应结果。新通知／Focus 副本的真实触发、iPhone 直接导入、独立账号导入及公开部署按钮的独立复现仍是已披露的后续项。跨日续期、网络变化和恢复能力另行验证，见[验证记录](validation-record.md)。
+[Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)包含 Bridge、双语浏览器指南，以及 Notifications、Charging、Focus On、Focus Off 四份脱敏签名文件。四份均已通过 Mac 重新导入与同账号 iPhone 同步，手机触发器仍须补加；新的 Charging 副本已有真机 → Bridge → dot 的对应结果。新通知／Focus 副本的真实触发、iPhone 直接导入及独立账号导入仍待完成。2026-10-15 Hosted Deploy 初装已通过；该新安装的 owner／dot／手机全链路仍待验收。跨日续期、网络变化和恢复能力另行验证，见[验证记录](validation-record.md)。
 
 ## 阶段一：可分享的复现包
 
@@ -27,7 +27,7 @@
 
 Apple 正式支持以 iCloud 链接或文件分享快捷指令，并支持导入问题。iOS 27 的自动化已经附在 shortcut 中，官方也说明跨设备同步时自动化为关闭状态。因此不能照搬旧版“个人自动化无法分享”的结论，但跨账户导入时 App 选择、Focus 映射和触发器保留情况仍需实测。[分享快捷指令](https://support.apple.com/guide/shortcuts/share-shortcuts-apdf01f8c054/ios)、[导入问题](https://support.apple.com/guide/shortcuts/add-import-questions-to-shared-shortcuts-apdf330fd3a0/10.0/ios/27)、[自动化简介](https://support.apple.com/en-ke/guide/shortcuts/apd690170742/ios)
 
-**更广泛的可移植性验收：**另一部使用独立账户的受支持 iPhone 能从公开模板完成接入；模板中没有原作者数据；用户本人能看到并决定数据目的地、来源范围及自动化开关。实验性 Beta 尚未完成这项更广泛的验收，发布不代表承诺一键安装。
+**更广泛的可移植性验收：**另一部使用独立账户的受支持 iPhone 能从公开模板完成接入；模板中没有原作者数据；用户本人能看到并决定数据目的地、来源范围及自动化开关。首版尚未完成这项更广泛的验收，发布不代表承诺一键安装。
 
 ## 阶段二：配对和诊断向导
 

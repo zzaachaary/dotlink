@@ -26,9 +26,9 @@
 
 ## 需要购买域名、保持 Mac 开机或使用终端吗？
 
-无需购买域名，默认使用 Worker 的 `workers.dev` 地址。浏览器优先 Beta 的主路径是 Cloudflare 官方部署、自己的 `/setup`、控制台配置、自己的 GitHub OAuth App、dot 连接及可选手机模块，不要求本地安装 Node.js 或使用终端。开发与恢复仍保留[高级 CLI 路径](deployment.md)。
+无需购买域名，默认使用 Worker 的 `workers.dev` 地址。浏览器主路径是 Cloudflare 官方部署、自己的 `/setup`、控制台配置、自己的 GitHub OAuth App、dot 连接及可选手机模块，不要求本地安装 Node.js 或使用终端。开发与恢复仍保留[高级 CLI 路径](deployment.md)。
 
-日常转发不需要 Mac 或 iPhone 镜像常开；镜像可辅助创建和检查快捷指令，但不是部署后的采集机制。[Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)提供四份签名模板，对应三个可选模块。已观察到的导入路径使用 Mac 和同账号 iCloud 同步；直接 iPhone 导入及全新账号部署仍未验证。[安装指南](iphone-shortcuts.md)说明这些边界和手机触发器配置。模板自带 HTTP 上传动作，无需再搭建旧辅助快捷指令。
+日常转发不需要 Mac 或 iPhone 镜像常开；镜像可辅助创建和检查快捷指令，但不是部署后的采集机制。[Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)提供四份签名模板，对应三个可选模块。已观察到的导入路径使用 Mac 和同账号 iCloud 同步；直接 iPhone 导入仍未验证。2026-10-15 Hosted Deploy 初装已通过，完整新安装链路仍待完成。[安装指南](iphone-shortcuts.md)说明这些边界和手机触发器配置。模板自带 HTTP 上传动作，无需再搭建旧辅助快捷指令。
 
 ## 在中国大陆，手机不开 VPN 能不能发送？
 
@@ -82,7 +82,7 @@ Bridge → ChatGPT 的事件接收端
 
 后两行是替代架构的评估方向，本仓库未集成、未测试具体产品，也没有证明某个现成服务能一键替换所有层。[n8n Webhook](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/) 和 [Make Webhooks](https://help.make.com/webhooks) 的官方文档只证明它们能承接 HTTP 事件，并不证明能直接对接个人 dot；托管方式还会增加一个处理通知内容的服务方。普通“发给模型取得回答”的 API 调用，不自动进入原 dot 的上下文。
 
-Beta 已包含浏览器指南与四份模板，对应三个独立可选模块。下一步是独立安装和剩余真实触发验证，再补充配对、状态与恢复能力。具体顺序和验收条件见[简化路线](roadmap.md)。
+DotLink 已包含浏览器指南与四份模板，对应三个独立可选模块。下一步是独立安装和剩余真实触发验证，再补充配对、状态与恢复能力。具体顺序和验收条件见[简化路线](roadmap.md)。
 
 ## 源码公开后，可以用于商业产品、托管或付费服务吗？
 

@@ -24,9 +24,9 @@ The source repository shares code; GitHub OAuth proves identity. They serve diff
 
 ## Do I need a domain, Mac, or terminal?
 
-A domain purchase is unnecessary: start with your Worker's `workers.dev` address. The browser-first Beta uses official Cloudflare deployment, your own `/setup`, dashboard values, your GitHub OAuth App, dot connection, and optional phone modules. The main flow does not require local Node.js or a terminal. Advanced development and recovery retain the CLI path in [deployment](deployment.md).
+A domain purchase is unnecessary: start with your Worker's `workers.dev` address. The browser setup uses official Cloudflare deployment, your own `/setup`, dashboard values, your GitHub OAuth App, dot connection, and optional phone modules. The main flow does not require local Node.js or a terminal. Advanced development and recovery retain the CLI path in [deployment](deployment.md).
 
-Daily forwarding does not require a Mac or iPhone Mirroring. The mirror can help author or inspect shortcuts; it does not provide the deployed collection mechanism. [Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1) supplies four signed templates for three optional modules. The observed import route used a Mac followed by same-account iCloud sync; direct iPhone import and fresh-account deployment remain unverified. The [installation guide](iphone-shortcuts.md) explains these limits and the required phone trigger setup. The templates contain their own HTTP upload actions, so you do not need to build the old helper shortcuts.
+Daily forwarding does not require a Mac or iPhone Mirroring. The mirror can help author or inspect shortcuts; it does not provide the deployed collection mechanism. [Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1) supplies four signed templates for three optional modules. The observed import route used a Mac followed by same-account iCloud sync; direct iPhone import remains unverified. Hosted Deploy bootstrap passed on 2026-10-15; the complete new-installation chain remains pending. The [installation guide](iphone-shortcuts.md) explains these limits and the required phone trigger setup. The templates contain their own HTTP upload actions, so you do not need to build the old helper shortcuts.
 
 ## Can the phone send from mainland China without a VPN?
 
@@ -80,7 +80,7 @@ The first version partially verified one route to automatic iPhone context in th
 
 The last two are architecture options, not integrated or verified replacements. [n8n Webhook](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/) and [Make Webhooks](https://help.make.com/webhooks) describe HTTP intake, not proof of personal-dot compatibility. Hosting there would add another processor of notification bodies. Calling a model API for a response does not automatically enter the original dot's context.
 
-The Beta includes a browser guide and four templates for three optional modules. Next steps are independent installation and remaining real-trigger checks, followed by pairing, status, and recovery improvements. See [roadmap](roadmap.md).
+DotLink includes a browser guide and four templates for three optional modules. Next steps are independent installation and remaining real-trigger checks, followed by pairing, status, and recovery improvements. See [roadmap](roadmap.md).
 
 ## May I use the source for a commercial product, hosting, or paid service?
 
