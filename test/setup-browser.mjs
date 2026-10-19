@@ -21,7 +21,7 @@ try {
   await page.screenshot({ path: desktop, fullPage: true });
   assert.equal(await page.locator('html').getAttribute('lang'), 'en');
   assert.equal(await page.getByRole('link', { name: 'Download templates', exact: true }).getAttribute('href'),
-    'https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1');
+    'https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0');
   assert.equal(await page.getByRole('link', { name: 'Download templates', exact: true }).isVisible(), true);
   assert.equal(await page.locator('#mcp-fresh-url').inputValue(), `${origin}/mcp`);
   assert.equal(await page.locator('#generate').isDisabled(), true);

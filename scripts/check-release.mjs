@@ -92,10 +92,10 @@ export function checkRelease(root, { documentRoot = root, includeFiles = false }
   }
   try {
     const pkg = JSON.parse(contents.get('package.json')), lock = JSON.parse(contents.get('package-lock.json'));
-    if (pkg.name !== 'dotlink' || pkg.version !== '0.1.0-beta.1' || pkg.private !== true ||
+    if (pkg.name !== 'dotlink' || pkg.version !== '0.1.0' || pkg.private !== true ||
         pkg.license !== 'PolyForm-Noncommercial-1.0.0' || lock.name !== pkg.name || lock.version !== pkg.version ||
         lock.packages[''].name !== pkg.name || lock.packages[''].version !== pkg.version || lock.packages[''].license !== pkg.license)
-      issues.push('package metadata: product, beta version, private flag or license mismatch');
+      issues.push('package metadata: product, release version, private flag or license mismatch');
     for (const field of ['dependencies', 'devDependencies', 'engines']) {
       if (JSON.stringify(pkg[field]) !== JSON.stringify(lock.packages[''][field])) issues.push(`package-lock.json: root ${field} mismatch`);
     }

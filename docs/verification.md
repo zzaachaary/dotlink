@@ -31,11 +31,11 @@ These results come from personal-device development records through 2026-10-01. 
 
 Actual local check results are dated in the [validation record](validation-record.md). Old test counts are not current results.
 
-## Experimental Beta evidence and follow-ups
+## Signed-template evidence and follow-ups
 
-[Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1) provides four sanitized, signed templates. Their new-copy evidence is narrower than the original personal workflow's history:
+The four sanitized, signed templates first shipped in [Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1) and retain the same bytes in [v0.1.0](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0). The regular release adds no new phone acceptance results. Their recorded evidence is narrower than the original personal workflow's history:
 
-| Item | Evidence for this Beta |
+| Item | Historical evidence for these template bytes |
 | --- | --- |
 | Four release files | Signing-container and sanitized-content checks; all four re-imported on Mac. |
 | Same-account iPhone synchronization | Observed for all four; system automation triggers had to be added on the phone. |
@@ -45,7 +45,7 @@ Actual local check results are dated in the [validation record](validation-recor
 | Cold run | Focus Off's first local request timed out and a repeat passed; the initial delay remains unresolved. |
 | Independent installation | Direct iPhone file import and another account remain pending. Hosted Deploy bootstrap passed on 10-15; that new instance’s complete chain did not. |
 
-These remaining checks are disclosed follow-ups for an experimental Beta, not completed results. Cross-day renewal, network changes, and phone outbox behavior remain separate reliability items. A subscription deadline advancing is not proof of delivery beyond its original expiry; there is no implemented phone outbox. The [dated validation record](validation-record.md) retains the original checks and failures.
+These remaining checks continue as disclosed follow-ups in v0.1.0; regular-release status does not mark them as passed. Cross-day renewal, network changes, and phone outbox behavior remain separate reliability items. A subscription deadline advancing is not proof of delivery beyond its original expiry; there is no implemented phone outbox. The [dated validation record](validation-record.md) retains the original checks and failures.
 
 ## Minimum acceptance for a new installation
 

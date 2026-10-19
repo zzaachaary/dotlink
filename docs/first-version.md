@@ -30,7 +30,7 @@ Historical unit/SQLite and workerd checks preceded later test changes. Do not tr
 
 `PUBLIC_ORIGIN` identifies the canonical MCP origin. Optional `AUTH_ORIGIN` selects a separate authorization origin; changes may require rediscovery or reconnection. Only the exact `ENABLE_INGEST` value `true` enables ingestion and delivery. Deployment and registration scripts perform remote writes and must be deliberately run against your own configuration.
 
-The new browser-first candidate uses `/setup` and dashboard configuration; the [deployment guide](deployment.md) retains the original CLI procedure for advanced use and recovery. This addition does not rewrite the historical evidence above.
+The current browser guide uses `/setup` and dashboard configuration; the [deployment guide](deployment.md) retains the original CLI procedure for advanced use and recovery. This addition does not rewrite the historical evidence above.
 
 ## Reproducing the Shortcuts structure
 

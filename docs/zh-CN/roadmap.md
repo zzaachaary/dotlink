@@ -8,19 +8,19 @@
 
 当前 Bridge、通用 webhook 编排、自建 API 助手和伴侣 App 的比较，以及服务交付边界，见[常见问题](faq.md)。
 
-## 当前首版：自己的账号，浏览器优先
+## 当前正式版 v0.1.0：自己的账号，浏览器优先
 
 目标主线为官方 Deploy to Cloudflare → 自己 Worker 的双语 `/setup` → 本人手动填写控制台变量／Secrets、GitHub OAuth App → 自己的 dot 连接 → 独立可选通知、充电、Focus 模块。
 
 向导通过 Web Crypto 在浏览器本地生成凭据，不接收 Cloudflare API Token 或 GitHub Client Secret，仅适用于全新部署。控制台变量应在重复部署后保留；不能静默覆盖 registry 或封装密钥。默认 `workers.dev` 无需购买域名，但不保证任何地区可达。
 
-[Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)包含 Bridge、双语浏览器指南，以及 Notifications、Charging、Focus On、Focus Off 四份脱敏签名文件。四份均已通过 Mac 重新导入与同账号 iPhone 同步，手机触发器仍须补加；新的 Charging 副本已有真机 → Bridge → dot 的对应结果。新通知／Focus 副本的真实触发、iPhone 直接导入及独立账号导入仍待完成。2026-10-15 Hosted Deploy 初装已通过；该新安装的 owner／dot／手机全链路仍待验收。跨日续期、网络变化和恢复能力另行验证，见[验证记录](validation-record.md)。
+[正式版 `v0.1.0`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0)包含 Bridge、双语浏览器指南，以及 Notifications、Charging、Focus On、Focus Off 四份脱敏签名文件。模板沿用原 Beta 字节，本次发布没有新增真机验收结果。四份均已通过 Mac 重新导入与同账号 iPhone 同步，手机触发器仍须补加；新的 Charging 副本已有真机 → Bridge → dot 的对应结果。新通知／Focus 副本的真实触发、iPhone 直接导入及独立账号导入仍待完成。2026-10-15 Hosted Deploy 初装已通过；该新安装的 owner／dot／手机全链路仍待验收。跨日续期、网络变化和恢复能力另行验证，见[验证记录](validation-record.md)。
 
 ## 阶段一：可分享的复现包
 
 目标体验是“导入 → 配置自己的连接 → 选择来源 → 本人授权 → 真实事件验收”。
 
-- Beta 已提供：四份脱敏签名文件、带版本的 Release 下载、校验值，以及填写本人连接设置的导入问题。
+- Beta 首次提供、v0.1.0 继续保留：四份脱敏签名文件、带版本的 Release 下载、校验值，以及填写本人连接设置的导入问题。
 - 后续验证其他导入路径与独立配置手机上的实际通知／Focus 输入绑定，保留已成功的事件字段和内联上传动作。
 - 将通知、充电和 Focus 分成可选择的模块，默认只开启用户明确选择的范围。
 - 保留各模块的合成测试和真实系统事件测试步骤；错误页面只显示阶段与错误类别，不回显令牌或通知正文。

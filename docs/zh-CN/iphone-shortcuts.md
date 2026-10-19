@@ -4,7 +4,7 @@
 
 DotLink 将通知、充电、Focus 分成三个独立可选模块，可选择任意组合。每项都需要本人选择来源、完成系统授权并验证真实触发；选择一项不等于同意其他采集。
 
-四份签名 `.shortcut` 与校验值继续使用[原始附件页](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)，历史标签保留。四份均曾在 Mac 重新导入并同步到同账号 iPhone；Charging 曾有真实自动触发和另一次手动上传至 dot 的结果。直接 iPhone 文件导入、新 Notifications 与 Focus On/Off 的实际触发仍待验证。Focus Off 在 Mac 本地首次请求曾超时、重复请求成功；原因尚未确定，不能据此断言手机必失败或冷启动已可靠。详见[日期化记录](validation-record.md)。
+四份签名 `.shortcut` 与校验值位于 [v0.1.0 Release](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0)，签名字节与 `v0.1.0-beta.1` 完全一致，历史标签及附件保留。本次发布没有新增真机验收结果。四份均曾在 Mac 重新导入并同步到同账号 iPhone；Charging 曾有真实自动触发和另一次手动上传至 dot 的结果。直接 iPhone 文件导入、新 Notifications 与 Focus On/Off 的实际触发仍待验证。Focus Off 在 Mac 本地首次请求曾超时、重复请求成功；原因尚未确定，不能据此断言手机必失败或冷启动已可靠。详见[日期化记录](validation-record.md)。
 
 历史真机证据限定于 iOS 27 及[验证说明](verification.md)记录的来源。快捷指令动作名称和通知触发器可用性随 iOS、语言、地区及设备状态变化。只有在自己的 iPhone 实际看到对应系统入口，才能继续该项设置；服务器支持某种事件，不等于手机已经能够采集它。
 
@@ -14,12 +14,12 @@ DotLink 将通知、充电、Focus 分成三个独立可选模块，可选择任
 
 | 文件 | 模块 | 导入时填写 |
 | --- | --- | --- |
-| [DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Notifications.shortcut) | 通知 | 自己的 HTTPS `/ingest` 地址和设备上传令牌 |
-| [DotLink-Charging.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Charging.shortcut) | 充电 | 相同地址和令牌 |
-| [DotLink-Focus-On.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Focus-On.shortcut) | 专注开启 | 相同地址／令牌和本人选择的专注模式名称 |
-| [DotLink-Focus-Off.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Focus-Off.shortcut) | 专注关闭 | 相同地址／令牌和完全一致的专注模式名称 |
+| [DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Notifications.shortcut) | 通知 | 自己的 HTTPS `/ingest` 地址和设备上传令牌 |
+| [DotLink-Charging.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Charging.shortcut) | 充电 | 相同地址和令牌 |
+| [DotLink-Focus-On.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-On.shortcut) | 专注开启 | 相同地址／令牌和本人选择的专注模式名称 |
+| [DotLink-Focus-Off.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-Off.shortcut) | 专注关闭 | 相同地址／令牌和完全一致的专注模式名称 |
 
-[SHA256SUMS](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/SHA256SUMS) 列出四份发布文件的哈希。使用这些 Release 附件，不要使用别人已经填写私人凭据后再次导出的成品。
+[SHA256SUMS](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/SHA256SUMS) 列出四份发布文件的哈希。使用这些 Release 附件，不要使用别人已经填写私人凭据后再次导出的成品。
 
 1. 在 iPhone 的 Safari 打开附件页，**先只下载 Charging**。从“文件”打开 `.shortcut` 并导入。直接手机导入仍需本人验证；历史已观察到的是 Mac 导入后同账号 iCloud 同步。
 2. 填入完整的 `https://自己的地址/ingest` 和**原始设备 token**：不加 `Bearer`，不带首尾空格或换行。模板已添加认证前缀。保持 `iphone-primary` 与服务器登记一致；不要填写 GitHub／Cloudflare 管理凭据。
@@ -92,7 +92,7 @@ DotLink 将通知、充电、Focus 分成三个独立可选模块，可选择任
 
 4. 运行 `DOT Bridge Uploader`，明确把完整事件字典作为输入，再返回上传器结果。
 
-不要把每次重试做成重新运行“生成事件”的步骤。安全重试应重发已经生成的同一份字典、保留原 `event_id` 和时间；当前草稿没有提供可靠的手机离线队列或自动补传实现。
+不要把每次重试做成重新运行“生成事件”的步骤。安全重试应重发已经生成的同一份字典、保留原 `event_id` 和时间；当前实现没有提供可靠的手机离线队列或自动补传实现。
 
 首次调用其他快捷指令或连接域名时，按系统提示完成授权。保存后重新打开输入字段检查变量仍然绑定；只在编辑器中看到一条动作不证明保存后的真实触发器能工作。
 

@@ -38,8 +38,8 @@ test('real unconfigured Worker: setup assets are public and all application rout
     return new Response('External requests disabled in tests', { status: 502 });
   }, { configured: false });
   const assets = [
-    ['/setup', 'text/html', /<title>DotLink/],
-    ['/setup/', 'text/html', /<title>DotLink/],
+    ['/setup', 'text/html', /<title data-en="DotLink · Personal setup" data-zh="DotLink · 个人设置">DotLink · Personal setup<\/title>/],
+    ['/setup/', 'text/html', /<title data-en="DotLink · Personal setup" data-zh="DotLink · 个人设置">DotLink · Personal setup<\/title>/],
     ['/setup/style.css', 'text/css', /\.shell/],
     ['/setup/app.js', 'text/javascript', /generateCredentials/],
   ];

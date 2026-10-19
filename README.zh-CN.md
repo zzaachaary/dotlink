@@ -4,7 +4,7 @@
 
 通过 iPhone 系统快捷指令和自己部署的 Cloudflare Bridge，将选定 App 的新通知、充电变化与专注模式变化交给自己的 ChatGPT dot。
 
-**DotLink 首版自托管安装。** 四份脱敏 Apple 签名模板保留在[原始附件页](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)，其历史标签与 package 版本仍为 `0.1.0-beta.1`。本指南使用仓库当前源码；完整新安装及所选手机触发器仍需本人验收，尚不作稳定性保证。已通过与待验证的范围见[验证记录](docs/zh-CN/validation-record.md)。本项目采用 PolyForm Noncommercial 1.0.0，需要自己的账号和手工手机配置。
+**DotLink v0.1.0 正式版。** [v0.1.0 Release](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0) 提供 Bridge、双语设置教程与四份脱敏 Apple 签名模板。模板沿用 `v0.1.0-beta.1` 的原始签名字节，本次发布没有新增真机验收结果。每个新安装及所选手机触发器仍需本人验收，尚不作稳定性保证。已通过与待验证的范围见[验证记录](docs/zh-CN/validation-record.md)。本项目采用 PolyForm Noncommercial 1.0.0，需要自己的账号和手工手机配置。
 
 DotLink 面向一个所有者及其登记设备。历史手机测试使用 iOS 27，只覆盖选定来源。项目与 Apple、Cloudflare、GitHub、OpenAI 没有官方隶属或背书关系。
 
@@ -12,12 +12,12 @@ DotLink 面向一个所有者及其登记设备。历史手机测试使用 iOS 2
 
 | 模块 | 签名快捷指令 |
 | --- | --- |
-| 通知 | [DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Notifications.shortcut) |
-| 充电 | [DotLink-Charging.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Charging.shortcut) |
-| 专注开启 | [DotLink-Focus-On.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Focus-On.shortcut) |
-| 专注关闭 | [DotLink-Focus-Off.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Focus-Off.shortcut) |
+| 通知 | [DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Notifications.shortcut) |
+| 充电 | [DotLink-Charging.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Charging.shortcut) |
+| 专注开启 | [DotLink-Focus-On.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-On.shortcut) |
+| 专注关闭 | [DotLink-Focus-Off.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-Off.shortcut) |
 
-[SHA-256 校验文件](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/SHA256SUMS) · [导入说明](docs/zh-CN/iphone-shortcuts.md)。填写自己的地址／令牌，绑定手机触发器之后再开启 Automation。
+[SHA-256 校验文件](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/SHA256SUMS) · [导入说明](docs/zh-CN/iphone-shortcuts.md)。填写自己的地址／令牌，绑定手机触发器之后再开启 Automation。
 
 ## 能力与边界
 

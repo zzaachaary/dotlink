@@ -59,7 +59,7 @@ test('generated credentials use separate 32-byte draws and match real server aut
 
 test('setup points both languages to published templates and lists every excluded notification source', async () => {
   const html = await setupResponse(new Request('https://fresh.example/setup')).text();
-  assert.match(html, /https:\/\/github.com\/zzaachaary\/dotlink\/releases\/tag\/v0\.1\.0-beta\.1/);
+  assert.match(html, /https:\/\/github.com\/zzaachaary\/dotlink\/releases\/tag\/v0\.1\.0"/);
   assert.doesNotMatch(html, /Importable templates are not available yet|暂未提供可导入模板/);
   assert.match(html, /ChatGPT, Codex and Shortcuts/);
   assert.match(html, /ChatGPT、Codex 和快捷指令/);
@@ -88,4 +88,96 @@ test('browser source keeps secrets local and generation is only wired to explici
   assert.match(source, /addEventListener\('click', async \(\) =>/);
   assert.match(source, /navigator\.clipboard/);
   assert.match(source, /\.select\(\)/);
+});
+
+test('step four copies current configuration and prevents empty or invalid GitHub IDs', async () => {
+  const browser = setupBrowser(SETUP_SCRIPT), field = id => browser.elements.get(id);
+  const copy = id => browser.groups['[data-copy]'].find(button => button.dataset.copy === id);
+  assert.equal(field('config-origin').value, 'https://fresh.example');
+  assert.equal(field('config-ingest').value, 'false');
+  for (const id of ['config-owner-id', 'config-client-id', 'config-seal-key', 'config-registry'])
+    assert.equal(copy(id).disabled, true);
+  assert.equal(browser.groups['[data-config-pending]'].every(element => !element.hidden), true);
+  assert.equal(browser.groups['[data-config-ready]'].every(element => element.hidden), true);
+
+  field('owner-github-id').value = ' 12345678 ';
+  await field('owner-github-id').dispatch('input');
+  field('github-client-id').value = ' Iv1.synthetic-client ';
+  await field('github-client-id').dispatch('input');
+  assert.equal(field('config-owner-id').value, '12345678');
+  assert.equal(field('config-client-id').value, 'Iv1.synthetic-client');
+  for (const id of ['config-origin', 'config-owner-id', 'config-ingest', 'config-client-id']) {
+    assert.equal(copy(id).disabled, false);
+    await copy(id).dispatch('click');
+  }
+  assert.deepEqual(browser.copies, ['https://fresh.example', '12345678', 'false', 'Iv1.synthetic-client']);
+
+  for (const input of ['octocat', '12e3', '-12', '12.3']) {
+    field('owner-github-id').value = input;
+    await field('owner-github-id').dispatch('input');
+    assert.equal(copy('config-owner-id').disabled, true);
+    assert.equal(field('owner-github-id').getAttribute('aria-invalid'), 'true');
+    assert.equal(browser.groups['[data-validation="owner-github-id"]'][0].hidden, false);
+    await copy('config-owner-id').dispatch('click');
+  }
+  assert.equal(browser.copies.length, 4, 'an invalid value never reaches the clipboard');
+  field('owner-github-id').value = ' ';
+  await field('owner-github-id').dispatch('input');
+  assert.equal(browser.groups['[data-validation="owner-github-id"]'][0].hidden, true);
+  field('github-client-id').value = ' ';
+  await field('github-client-id').dispatch('input');
+  assert.equal(copy('config-client-id').disabled, true);
+});
+
+test('step four credentials copy while hidden and remain stable across language, mode and module changes', async () => {
+  const browser = setupBrowser(SETUP_SCRIPT), field = id => browser.elements.get(id);
+  const copy = id => browser.groups['[data-copy]'].find(button => button.dataset.copy === id);
+  field('fresh-install').checked = true;
+  await field('fresh-install').dispatch('change');
+  await field('generate').dispatch('click');
+  const before = ['seal-key', 'device-token', 'device-registry', 'config-seal-key', 'config-registry']
+    .map(id => [id, field(id).value]);
+  assert.equal(field('config-seal-key').value, field('seal-key').value);
+  assert.equal(field('config-registry').value, field('device-registry').value);
+  assert.equal(browser.groups['[data-config-pending]'].every(element => element.hidden), true);
+  assert.equal(browser.groups['[data-config-ready]'].every(element => !element.hidden), true);
+  for (const id of ['config-seal-key', 'config-registry']) {
+    assert.equal(field(id).hidden, true);
+    assert.equal(copy(id).disabled, false);
+    await copy(id).dispatch('click');
+    assert.equal(field(id).hidden, true, 'copy does not reveal the secret');
+  }
+  assert.deepEqual(browser.copies, [field('seal-key').value, field('device-registry').value]);
+
+  for (const button of browser.groups['[data-reveal]']) await button.dispatch('click');
+  await browser.groups['[data-language]'][1].dispatch('click');
+  await browser.groups['[data-mode]'][1].dispatch('click');
+  assert.equal(before.every(([id]) => field(id).hidden), true, 'existing mode masks both credential locations');
+  assert.equal(browser.groups['[data-mask]'].every(mask => !mask.hidden), true);
+  await browser.groups['[data-mode]'][0].dispatch('click');
+  browser.groups['[data-module]'][0].checked = true;
+  await browser.groups['[data-module]'][0].dispatch('change');
+  assert.deepEqual(before.map(([id]) => [id, field(id).value]), before);
+  assert.equal(field('generate').disabled, true);
+  assert.equal(copy('config-seal-key').getAttribute('aria-label'), '复制 config-seal-key');
+  assert.equal(field('owner-github-id').getAttribute('placeholder'), '你的 GitHub 数字 ID');
+  assert.equal(browser.groups['[data-aria-label-en]'][0].getAttribute('aria-label'), '设置导航');
+  const freshPage = setupBrowser(SETUP_SCRIPT);
+  assert.equal(freshPage.elements.get('config-seal-key').value, '');
+  assert.equal(freshPage.elements.get('config-owner-id').value, '');
+});
+
+test('clipboard denial selects the configuration field at the copy button without changing its original', async () => {
+  const browser = setupBrowser(SETUP_SCRIPT, { clipboardAvailable: false });
+  const field = id => browser.elements.get(id);
+  field('fresh-install').checked = true;
+  await field('generate').dispatch('click');
+  await browser.groups['[data-copy]'].find(button => button.dataset.copy === 'config-registry').dispatch('click');
+  assert.equal(field('config-registry').hidden, false);
+  assert.equal(field('config-registry').focused, true);
+  assert.equal(field('config-registry').selected, true);
+  assert.equal(browser.groups['[data-mask]'].find(mask => mask.dataset.mask === 'config-registry').hidden, true);
+  assert.equal(field('device-registry').hidden, true);
+  assert.equal(browser.copies.length, 0);
+  assert.match(field('status').textContent, /Clipboard unavailable/);
 });

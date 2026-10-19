@@ -2,7 +2,7 @@
 
 [English](faq.md) | [简体中文](zh-CN/faq.md) · [Home](../README.md)
 
-The original FAQ was compiled on 2026-10-02; browser-first candidate notes were added on 2026-10-08 and experimental Beta status on 2026-10-12. Implementation facts come from this repository. Platform rules may change. Local tests are not live-service reliability evidence.
+The original FAQ was compiled on 2026-10-02; browser-first candidate notes were added on 2026-10-08 and experimental Beta status on 2026-10-12. Current installation instructions target the regular `v0.1.0` release. Implementation facts come from this repository. Platform rules may change. Local tests are not live-service reliability evidence.
 
 ## Why does an iPhone event appear in my personal dot?
 
@@ -26,7 +26,7 @@ The source repository shares code; GitHub OAuth proves identity. They serve diff
 
 A domain purchase is unnecessary: start with your Worker's `workers.dev` address. The browser setup uses official Cloudflare deployment, your own `/setup`, dashboard values, your GitHub OAuth App, dot connection, and optional phone modules. The main flow does not require local Node.js or a terminal. Advanced development and recovery retain the CLI path in [deployment](deployment.md).
 
-Daily forwarding does not require a Mac or iPhone Mirroring. The mirror can help author or inspect shortcuts; it does not provide the deployed collection mechanism. [Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1) supplies four signed templates for three optional modules. The observed import route used a Mac followed by same-account iCloud sync; direct iPhone import remains unverified. Hosted Deploy bootstrap passed on 2026-10-15; the complete new-installation chain remains pending. The [installation guide](iphone-shortcuts.md) explains these limits and the required phone trigger setup. The templates contain their own HTTP upload actions, so you do not need to build the old helper shortcuts.
+Daily forwarding does not require a Mac or iPhone Mirroring. The mirror can help author or inspect shortcuts; it does not provide the deployed collection mechanism. [Release `v0.1.0`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0) supplies four signed templates for three optional modules, unchanged from the original Beta files. The release adds no new phone acceptance results. The observed import route used a Mac followed by same-account iCloud sync; direct iPhone import remains unverified. Hosted Deploy bootstrap passed on 2026-10-15; the complete new-installation chain remains pending. The [installation guide](iphone-shortcuts.md) explains these limits and the required phone trigger setup. The templates contain their own HTTP upload actions, so you do not need to build the old helper shortcuts.
 
 ## Can the phone send from mainland China without a VPN?
 

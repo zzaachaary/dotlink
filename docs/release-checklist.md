@@ -2,7 +2,7 @@
 
 [English](release-checklist.md) | [简体中文](zh-CN/release-checklist.md) · [Home](../README.md)
 
-DotLink maintains its source and installation guide as one first edition. The historical `v0.1.0-beta.1` tag and assets remain; a new version label does not replace acceptance. Existing evidence and unfinished checks are kept separate below. A public repository does not establish stable phone behavior. See the [validation record](validation-record.md).
+This checklist covers the regular v0.1.0 release. The historical `v0.1.0-beta.1` tag and assets remain; v0.1.0 reuses the original signed template bytes. Release status does not replace acceptance or add phone-test evidence. Existing evidence and unfinished checks are kept separate below. See the [validation record](validation-record.md).
 
 ## Completed first prerelease record (2026-10-12)
 

@@ -6,19 +6,19 @@ The original roadmap was compiled on 2026-10-02, with browser-first candidate no
 
 Preserve the working protocol and system triggers while reducing repeated configuration, diagnosis, and recovery work. A full companion app is not needed to first evaluate templates and a browser guide. Alternative architectures and service-delivery boundaries are in the [FAQ](faq.md).
 
-## Current first edition: own-account browser setup
+## Current release: v0.1.0 own-account browser setup
 
 The intended path is official Deploy to Cloudflare → your Worker's bilingual `/setup` → manually entered Cloudflare variables/Secrets and GitHub OAuth App → your dot connection → independently optional notification, charging, and Focus modules.
 
 The guide generates credentials locally through Web Crypto. It does not receive a Cloudflare API token or GitHub Client Secret and is only for fresh deployments. Dashboard-managed variables must survive redeployment; setup must not silently replace an existing registry or sealing key. Default `workers.dev` avoids requiring a domain purchase, without promising regional availability.
 
-[Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1) includes the bridge, bilingual browser guide, and four sanitized signed files for Notifications, Charging, Focus On, and Focus Off. All four passed Mac re-import and same-account iPhone synchronization; phone triggers must be added. The new Charging copy has a real-phone → Bridge → dot result. The new notification/Focus copies' real triggers and direct iPhone/second-account import remain pending. Hosted Deploy bootstrap passed on 2026-10-15; owner/dot/phone acceptance on that new installation remains unfinished. Cross-day renewal, network variation, and recovery are separate reliability work. See the dated [validation record](validation-record.md).
+[Release `v0.1.0`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0) includes the bridge, bilingual browser guide, and four sanitized signed files for Notifications, Charging, Focus On, and Focus Off. The templates reuse the original Beta bytes; this release adds no new phone acceptance results. All four passed Mac re-import and same-account iPhone synchronization; phone triggers must be added. The new Charging copy has a real-phone → Bridge → dot result. The new notification/Focus copies' real triggers and direct iPhone/second-account import remain pending. Hosted Deploy bootstrap passed on 2026-10-15; owner/dot/phone acceptance on that new installation remains unfinished. Cross-day renewal, network variation, and recovery are separate reliability work. See the dated [validation record](validation-record.md).
 
 ## Stage 1: shareable reproduction package
 
 Desired experience: import → configure your connection → select sources → grant system permissions → verify real events.
 
-- Shipped in the Beta: four signed, sanitized files, versioned release downloads, checksums, and import questions for each user's connection settings.
+- First shipped in the Beta and retained in v0.1.0: four signed, sanitized files, versioned release downloads, checksums, and import questions for each user's connection settings.
 - Verify the remaining import routes and actual notification/Focus input bindings on independently configured phones; retain the working event fields and inline upload actions.
 - Keep notifications, charging, and Focus independently optional. Enable only the scope the owner chooses.
 - Retain synthetic and real-trigger checks per module. Error displays show stage/category, not tokens or bodies.

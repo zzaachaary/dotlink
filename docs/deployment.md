@@ -4,7 +4,7 @@
 
 DotLink is a single-owner self-hosted bridge under [PolyForm Noncommercial 1.0.0](../LICENSE). It is not a hosted service, and not every ChatGPT account has dot or custom MCP Events access. First confirm the target dot can connect to a custom MCP service and subscribe to events; a client supporting only tool calls cannot automatically receive them.
 
-**Release status:** experimental [Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1), with source at [zzaachaary/dotlink](https://github.com/zzaachaary/dotlink). Four signed, sanitized templates cover three optional phone modules. All four passed Mac re-import; the new Charging copy has a real-phone → Bridge → dot result. Direct iPhone and independent-account import, the new notification/Focus copies' real triggers, and a fresh-account Deploy to Cloudflare run remain disclosed follow-ups. This guide is not a claim that the entire new-user path has been independently reproduced.
+**Release status:** [v0.1.0](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0), a regular release with source at [zzaachaary/dotlink](https://github.com/zzaachaary/dotlink). Its four signed, sanitized templates reuse the original bytes from `v0.1.0-beta.1` and cover three optional phone modules; this release adds no new phone acceptance results. All four previously passed Mac re-import; the Charging copy has historical real-phone → Bridge → dot results. Direct iPhone and independent-account import, the notification/Focus copies' real triggers, and a fresh-account Deploy to Cloudflare run remain disclosed follow-ups. This guide is not a claim that the entire new-user path has been independently reproduced.
 
 Use your own accounts and credentials. Deploying creates or changes Cloudflare resources and can incur platform charges. A `workers.dev` address is sufficient; buying a domain is optional. No address choice guarantees mainland-China connectivity or changes ChatGPT's platform availability.
 
@@ -20,17 +20,9 @@ On 2026-10-15, a validation branch from the same first-edition source lineage pa
 
 The checked-in `wrangler.jsonc` contains deployment structure, `OAUTH_KV`, the `BRIDGE` SQLite Durable Object, and its initial migration. It has no private account IDs, tokens, or environment values. With required configuration absent, only `/setup` and its static assets are available; `/health`, OAuth, MCP and ingestion return `503`. This is the expected bootstrap state, not a signal to disable configuration checks. Do not alter migrations to clear data.
 
-After deployment, open the HTTPS `workers.dev` URL shown by Cloudflare and append `/setup`. The [Cloudflare workers.dev guide](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/) explains the account-specific address. If a custom domain is desired, bind it to this Worker and use one consistent origin throughout; see [Custom Domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/).
+After deployment, open the HTTPS `workers.dev` URL shown by Cloudflare and append `/setup`. Select English or 简体中文. This guide’s six steps match the page numbering. The [Cloudflare workers.dev guide](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/) explains the account-specific address. If a custom domain is desired, bind it to this Worker and use one consistent origin throughout; see [Custom Domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/).
 
-### 2. Open the bilingual guide and confirm a fresh installation
-
-Select English or 简体中文 at `/setup`. Use credential generation only for a genuinely new deployment with no existing registry or sealing key. The page cannot prove your deployment is unused; check your Cloudflare dashboard yourself. For an existing deployment, keep its values and use the recovery information rather than generating replacements.
-
-The guide uses Web Crypto locally in an HTTPS browser to generate a device token, its SHA-256 registry entry for `iphone-primary`, and `BRIDGE_SEAL_KEY`. These are not configured on the server by clicking Generate. Privately back up the generated values before refreshing or leaving; they are session values, not an account recovery service.
-
-The page does not request or receive a Cloudflare API token or GitHub Client Secret. You enter server configuration directly into Cloudflare. Never paste secrets into chat, issues, screenshots, public URLs, or source files.
-
-### 3. Create your GitHub OAuth App
+### 2. Create your GitHub OAuth App
 
 Create an **OAuth App**, not a GitHub App, in your own account following [GitHub's guide](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app):
 
@@ -42,7 +34,19 @@ Create an **OAuth App**, not a GitHub App, in your own account following [GitHub
 
 Find your numeric GitHub user ID, not your login name. The public official endpoint `https://api.github.com/users/YOUR_LOGIN` includes your `id` and requires no access token. The bridge allows that single configured owner, requests no repository access, and does not persist the upstream GitHub token.
 
+Enter your numeric GitHub ID and OAuth App Client ID in step 2 of `/setup`. Its step 4 configuration table updates as you type, so you can copy both values there without scrolling back. They stay only in the current page and are cleared on refresh. Keep the Client secret out of `/setup`; copy it from GitHub directly into Cloudflare.
+
+### 3. Generate and save your credentials
+
+Use credential generation only for a genuinely new deployment with no existing registry or sealing key. The page cannot prove your deployment is unused; check your Cloudflare dashboard yourself. For an existing deployment, keep its values and use the recovery information rather than generating replacements.
+
+The guide uses Web Crypto locally in an HTTPS browser to generate a device token, its SHA-256 registry entry for `iphone-primary`, and `BRIDGE_SEAL_KEY`. These are not configured on the server by clicking Generate. Privately back up the generated values before refreshing or leaving; they are session values, not an account recovery service.
+
+The page does not request or receive a Cloudflare API token or GitHub Client Secret. You enter server configuration directly into Cloudflare. Never paste secrets into chat, issues, screenshots, public URLs, or source files.
+
 ### 4. Apply variables and Secrets in Cloudflare
+
+Use the copy buttons in step 4 of `/setup`. The table includes the Worker origin, the two IDs entered above, `false`, and the `BRIDGE_SEAL_KEY` and `DEVICE_REGISTRY` generated in step 3 of `/setup`. Generated credentials are masked by default; you can copy their complete values without revealing them first. This is synchronization within the page, not a read or update of Cloudflare settings.
 
 In your Worker's active environment, manually configure these **plain-text variables**:
 
@@ -56,7 +60,7 @@ Then configure these **Secrets**:
 
 | Secret | Source and destination |
 | --- | --- |
-| `GITHUB_CLIENT_ID` | Your OAuth App Client ID, entered directly into Cloudflare |
+| `GITHUB_CLIENT_ID` | Your OAuth App Client ID, copied from the `/setup` configuration table into Cloudflare |
 | `GITHUB_CLIENT_SECRET` | Your OAuth App Client Secret, entered directly into Cloudflare |
 | `BRIDGE_SEAL_KEY` | The fresh sealing key generated locally by `/setup` |
 | `DEVICE_REGISTRY` | The complete fresh JSON registry generated locally by `/setup`; contains the token digest, not raw token |
@@ -67,7 +71,13 @@ Apply the dashboard’s configuration changes and check `/health`: it must retur
 
 **Redeployment policy:** the public configuration uses `keep_vars:true` and deliberately omits `vars`, keeping these values dashboard-managed. Do not add example/default `vars` into that public deployment config: explicitly configured values could overwrite dashboard settings on a later deployment. Secrets and any existing `DEVICE_REGISTRY`/`BRIDGE_SEAL_KEY` must be preserved. Follow the [Wrangler configuration reference](https://developers.cloudflare.com/workers/wrangler/configuration/) for the installed toolchain.
 
-### 5. Connect your dot and subscribe
+### 5. Set up your iPhone shortcuts
+
+Start by downloading only `DotLink-Charging.shortcut` from the [v0.1.0 assets](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0). Follow the [phone guide](iphone-shortcuts.md) to enter your complete HTTPS `/ingest` URL and raw device token. Do not include `Bearer` or surrounding whitespace; the template adds the authentication prefix. Retain the default device ID `iphone-primary`. Save, exit, and reopen to verify the URL and token persisted. Keep automation off during setup.
+
+Only fill in and save the shortcut configuration at this point; do not run a test. Keep `ENABLE_INGEST=false` and phone automations off until the dot connection and subscription in step 6 are complete.
+
+### 6. Connect your dot and verify delivery
 
 In an eligible ChatGPT/Codex client, create a custom MCP connection to your origin plus `/mcp`, using OAuth. Complete bridge consent and GitHub sign-in as the configured owner. Account availability and UI can change; consult [OpenAI MCP Events](https://developers.openai.com/plugins/build/mcp-events) and the current client. This project has no shared public plugin ID or preconfigured personal connection.
 
@@ -78,10 +88,6 @@ The service supports Dynamic Client Registration and CIMD. If metadata discovery
 In the **target personal dot**, request `phone_devices` to confirm `iphone-primary`, subscribe to `phone.event` filtered to that device and the kinds you choose, and read `phone_bridge_status` to confirm expiry. Use `notification`, `device_status` for charging, and `focus`. The receiver supplies callback and signing Secret; do not paste those into a chat or repository.
 
 Leases default to and cannot exceed 24 hours. The client must renew; the code does not guarantee perpetual client renewal or replay subscription gaps. Real events after the original expiry point are required to verify long-term renewal.
-
-### 6. Complete Charging once, then add optional modules
-
-Start by downloading only `DotLink-Charging.shortcut` from the [original asset page](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1). Follow the [phone guide](iphone-shortcuts.md) to enter your complete HTTPS `/ingest` URL and raw device token. Do not include `Bearer` or surrounding whitespace; the template adds the authentication prefix. Retain the default device ID `iphone-primary`. Save, exit, and reopen to verify the URL and token persisted. Keep automation off during setup.
 
 After owner OAuth and subscription succeed, set dashboard `ENABLE_INGEST` to string `true`, apply it, and check `/health`. Run Charging manually once, completing the first-use permission for your own Bridge. Confirm the new Bridge record and matching dot response. `accepted` means receipt; the corresponding dot result establishes processing of that event.
 

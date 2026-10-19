@@ -4,7 +4,7 @@
 
 Send selected iPhone notifications, charging changes, and Focus changes to your own ChatGPT dot using iOS Shortcuts and a self-hosted Cloudflare bridge.
 
-**DotLink first-edition self-hosted installation.** The four sanitized Apple-signed templates remain on the [original asset page](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1); the historical tag and package version remain `0.1.0-beta.1`. This guide uses the repository’s current source. A complete new installation and your selected phone triggers still require manual acceptance; stable reliability is not yet established. See the [validation record](docs/validation-record.md) for passed and pending checks. DotLink is source-available under PolyForm Noncommercial 1.0.0 and requires your own accounts and manual phone configuration.
+**DotLink v0.1.0 — self-hosted release.** The [v0.1.0 release](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0) includes the bridge, bilingual setup guide and four sanitized Apple-signed templates. The templates retain their original signed bytes from `v0.1.0-beta.1`; this release adds no new phone acceptance results. Each new installation and its selected triggers still require manual acceptance, and stable reliability is not yet established. See the [validation record](docs/validation-record.md) for passed and pending checks. DotLink is source-available under PolyForm Noncommercial 1.0.0 and requires your own accounts and manual phone configuration.
 
 DotLink is for one owner and their registered devices. Historical phone testing used iOS 27 and selected sources. It is not affiliated with or endorsed by Apple, Cloudflare, GitHub, or OpenAI.
 
@@ -12,12 +12,12 @@ DotLink is for one owner and their registered devices. Historical phone testing 
 
 | Module | Signed shortcut |
 | --- | --- |
-| Notifications | [DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Notifications.shortcut) |
-| Charging | [DotLink-Charging.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Charging.shortcut) |
-| Focus on | [DotLink-Focus-On.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Focus-On.shortcut) |
-| Focus off | [DotLink-Focus-Off.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Focus-Off.shortcut) |
+| Notifications | [DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Notifications.shortcut) |
+| Charging | [DotLink-Charging.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Charging.shortcut) |
+| Focus on | [DotLink-Focus-On.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-On.shortcut) |
+| Focus off | [DotLink-Focus-Off.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-Off.shortcut) |
 
-[SHA-256 checksums](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/SHA256SUMS) · [Import instructions](docs/iphone-shortcuts.md). Configure your own URL/token and bind the phone triggers before enabling Automation.
+[SHA-256 checksums](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/SHA256SUMS) · [Import instructions](docs/iphone-shortcuts.md). Configure your own URL/token and bind the phone triggers before enabling Automation.
 
 ## Capabilities and limits
 

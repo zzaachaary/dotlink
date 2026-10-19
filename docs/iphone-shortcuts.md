@@ -4,7 +4,7 @@
 
 DotLink provides three independent choices: **notifications**, **charging**, and **Focus**. Select any subset. Each requires its own system permissions, source selection, and real-trigger acceptance; enabling one must not imply consent to the others.
 
-The four signed `.shortcut` files and checksums remain on the [original asset page](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1), retaining its historical tag. All four were re-imported on Mac and synced to the same-account iPhone. Charging has a real automatic-trigger round and a later manual phone-to-dot upload. Direct iPhone file import and real triggers for the new Notifications and Focus On/Off copies remain pending. Focus Off initially timed out on Mac loopback and later succeeded; its cause is unresolved and proves neither inevitable iPhone failure nor reliable cold starts. See the [dated record](validation-record.md).
+The four signed `.shortcut` files and checksums are available in the [v0.1.0 release](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0). Their signed bytes are unchanged from `v0.1.0-beta.1`, whose historical tag and assets remain available. This release adds no new phone acceptance results. All four were re-imported on Mac and synced to the same-account iPhone. Charging has a real automatic-trigger round and a later manual phone-to-dot upload. Direct iPhone file import and real triggers for the new Notifications and Focus On/Off copies remain pending. Focus Off initially timed out on Mac loopback and later succeeded; its cause is unresolved and proves neither inevitable iPhone failure nor reliable cold starts. See the [dated record](validation-record.md).
 
 Historical supported phone evidence is limited to iOS 27 and the sources listed in [verification](verification.md). Action names, trigger availability, language, region, and device state may differ. Proceed with a module only if its required system interface exists on your own phone. Server support does not prove phone collection.
 
@@ -14,12 +14,12 @@ First complete service, identity, device registration, and dot subscription in [
 
 | File | Module | Import answers |
 | --- | --- | --- |
-| [DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Notifications.shortcut) | Notifications | Your HTTPS `/ingest` URL and device upload token |
-| [DotLink-Charging.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Charging.shortcut) | Charging | The same URL and token |
-| [DotLink-Focus-On.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Focus-On.shortcut) | Focus starts | The same URL/token and your chosen Focus name |
-| [DotLink-Focus-Off.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/DotLink-Focus-Off.shortcut) | Focus ends | The same URL/token and exactly the same Focus name |
+| [DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Notifications.shortcut) | Notifications | Your HTTPS `/ingest` URL and device upload token |
+| [DotLink-Charging.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Charging.shortcut) | Charging | The same URL and token |
+| [DotLink-Focus-On.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-On.shortcut) | Focus starts | The same URL/token and your chosen Focus name |
+| [DotLink-Focus-Off.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-Off.shortcut) | Focus ends | The same URL/token and exactly the same Focus name |
 
-[SHA256SUMS](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0-beta.1/SHA256SUMS) lists the four release-file hashes. Use these specific release assets, not an exported copy already personalized with somebody's credentials.
+[SHA256SUMS](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/SHA256SUMS) lists the four release-file hashes. Use these specific release assets, not an exported copy already personalized with somebody's credentials.
 
 1. Open the asset page in Safari on iPhone and **download only Charging first**. Open the `.shortcut` from Files and import it. Direct phone import still requires your check; the observed historical route was Mac import followed by same-account iCloud sync.
 2. Enter the complete `https://your-host/ingest` URL and **raw device token**, without `Bearer`, surrounding spaces or newlines. The template already adds the authentication prefix. Keep `iphone-primary` consistent with the server registration. Never enter GitHub or Cloudflare management credentials.

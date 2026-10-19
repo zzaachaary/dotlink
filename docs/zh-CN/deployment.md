@@ -4,7 +4,7 @@
 
 DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者、自行部署 Bridge，不是托管服务。并非每个 ChatGPT 账号都具备 dot 或自定义 MCP Events 接入资格。开始前确认目标 dot 能连接自定义 MCP 服务并订阅事件；只能调用 MCP 工具的客户端不自动具备事件接收能力。
 
-**发布状态：实验性 [Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)**，源码位于 [zzaachaary/dotlink](https://github.com/zzaachaary/dotlink)。四份已签名、脱敏模板覆盖三个可选手机模块；均已完成 Mac 重新导入，新的 Charging 副本已有真机 → Bridge → dot 的对应结果。iPhone 直接导入、独立账号导入、新通知／Focus 副本的真实触发及全新账号 Deploy to Cloudflare 仍是已披露的后续验证项；这份指南不表示完整新用户流程已独立复现。
+**发布状态：[v0.1.0 正式版](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0)**，源码位于 [zzaachaary/dotlink](https://github.com/zzaachaary/dotlink)。四份签名、脱敏模板沿用 `v0.1.0-beta.1` 的原始字节，覆盖三个可选手机模块；本次发布没有新增真机验收结果。四份此前均完成 Mac 重新导入，Charging 副本有历史真机 → Bridge → dot 对应结果。iPhone 直接导入、独立账号导入、通知／Focus 副本的真实触发及全新账号 Deploy to Cloudflare 仍是已披露的后续验证项；这份指南不表示完整新用户流程已独立复现。
 
 全程使用自己的账号和凭据。部署会创建或修改 Cloudflare 资源，可能产生平台费用。默认 `workers.dev` 地址即可使用，无需购买域名；任何地址选择都不保证大陆网络可达，也不改变 ChatGPT 的平台服务范围。
 
@@ -20,17 +20,9 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 
 仓库中的 `wrangler.jsonc` 只包含公开部署结构、`OAUTH_KV`、`BRIDGE` SQLite Durable Object 及初始 migration，不包含私人账号 ID、token 或环境变量值。缺少必要配置时，仅 `/setup` 及其静态资源可用；`/health`、OAuth、MCP 和上传均返回 `503`。这是预期初装状态，不应通过关闭配置检查绕过。不要用修改 migration 的方式清理数据。
 
-部署后打开 Cloudflare 显示的 HTTPS `workers.dev` 地址，在末尾加 `/setup`。[workers.dev 文档](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/)说明账号专属地址规则。如需自定义域名，先绑定至这个 Worker，再统一使用同一 Origin；见 [Custom Domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/)。
+部署后打开 Cloudflare 显示的 HTTPS `workers.dev` 地址，在末尾加 `/setup`，选择 English 或简体中文。本指南的六步与页面编号一致。[workers.dev 文档](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/)说明账号专属地址规则。如需自定义域名，先绑定至这个 Worker，再统一使用同一 Origin；见 [Custom Domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/)。
 
-### 2. 打开双语向导，确认是全新部署
-
-在 `/setup` 选择 English 或简体中文。只有**远程不存在既有设备 registry 和封装密钥的全新部署**才生成凭据。页面不能证明部署从未使用，必须由本人在 Cloudflare 控制台确认。已有部署保留原值，使用恢复说明，不要生成替代值。
-
-向导通过 HTTPS 浏览器本地 Web Crypto 生成设备 token、`iphone-primary` 的 SHA-256 摘要登记，以及 `BRIDGE_SEAL_KEY`。点击生成不会将这些值配置到服务器。刷新或离开前先私密备份；页面会话不是账号凭据恢复服务。
-
-向导不请求或接收 Cloudflare API Token 或 GitHub Client Secret。本人直接在 Cloudflare 填写服务器配置，不要把秘密粘贴到聊天、Issue、截图、公开 URL 或源码文件。
-
-### 3. 创建自己的 GitHub OAuth App
+### 2. 创建自己的 GitHub OAuth App
 
 依照 [GitHub 官方指南](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app)，创建 **OAuth App**，不是 GitHub App：
 
@@ -42,7 +34,19 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 
 确认自己的 GitHub **数字 ID**，不是用户名。官方公开接口 `https://api.github.com/users/YOUR_LOGIN` 中的 `id` 无需访问令牌即可读取。Bridge 只允许这一个已配置 owner，不申请仓库权限，也不持久保存上游 GitHub token。
 
+在 `/setup` 的步骤 2 填写 GitHub 数字 ID 和 OAuth App Client ID。页面步骤 4 的配置表会随输入同步更新，可在那里直接复制，不必往上翻找。这两项只留在当前页面，刷新后清空。Client secret 不要填入 `/setup`，从 GitHub 复制后直接粘贴到 Cloudflare。
+
+### 3. 生成并保存私密凭据
+
+只有**远程不存在既有设备 registry 和封装密钥的全新部署**才生成凭据。页面不能证明部署从未使用，必须由本人在 Cloudflare 控制台确认。已有部署保留原值，使用恢复说明，不要生成替代值。
+
+向导通过 HTTPS 浏览器本地 Web Crypto 生成设备 token、`iphone-primary` 的 SHA-256 摘要登记，以及 `BRIDGE_SEAL_KEY`。点击生成不会将这些值配置到服务器。刷新或离开前先私密备份；页面会话不是账号凭据恢复服务。
+
+向导不请求或接收 Cloudflare API Token 或 GitHub Client Secret。本人直接在 Cloudflare 填写服务器配置，不要把秘密粘贴到聊天、Issue、截图、公开 URL 或源码文件。
+
 ### 4. 在 Cloudflare 填写变量与 Secrets
+
+使用 `/setup` 步骤 4 的复制按钮。表中包含 Worker 来源地址、上面填写的两项 ID、`false`，以及页面步骤 3 生成的 `BRIDGE_SEAL_KEY` 和 `DEVICE_REGISTRY`。生成的凭据默认遮罩显示，无需先显示原文即可复制完整值。这只是页面内同步，不会读取或修改 Cloudflare 配置。
 
 在目标 Worker 的实际使用环境中，手动配置三个**普通文本变量**：
 
@@ -56,7 +60,7 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 
 | Secret | 来源与去向 |
 | --- | --- |
-| `GITHUB_CLIENT_ID` | 本人 OAuth App 的 Client ID，直接填入 Cloudflare |
+| `GITHUB_CLIENT_ID` | 本人 OAuth App 的 Client ID，从 `/setup` 配置表复制到 Cloudflare |
 | `GITHUB_CLIENT_SECRET` | 本人 OAuth App 的 Client Secret，直接填入 Cloudflare |
 | `BRIDGE_SEAL_KEY` | `/setup` 本地生成的全新封装密钥 |
 | `DEVICE_REGISTRY` | `/setup` 本地生成的完整 JSON 登记；包含 token 摘要，不包含原始 token |
@@ -67,7 +71,13 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 
 **重复部署规则：**公开配置设置 `keep_vars:true`，并刻意不写 `vars`，让这三个变量保持由控制台管理。不要向公开部署配置补入旧的示例或默认 `vars`；显式配置值可能在下次部署覆盖控制台设置。保留既有 Secrets、`DEVICE_REGISTRY` 和 `BRIDGE_SEAL_KEY`。配置行为以当前工具链和 [Wrangler 配置文档](https://developers.cloudflare.com/workers/wrangler/configuration/)为准。
 
-### 5. 连接自己的 dot 并订阅
+### 5. 设置 iPhone 快捷指令
+
+先从[v0.1.0 附件页](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0)仅下载 `DotLink-Charging.shortcut`，按[手机导入说明](iphone-shortcuts.md)填写完整 HTTPS `/ingest` 地址和原始设备 token。token 不加 `Bearer`，不带首尾空格；模板会添加认证前缀。保留默认设备 ID `iphone-primary`。保存退出，再重新打开核对地址和 token 已保存。配置期间自动化保持关闭。
+
+此时只填写并保存快捷指令配置，不运行测试。保持 `ENABLE_INGEST=false` 和手机自动化关闭，等步骤 6 完成 dot 连接与订阅后再启用。
+
+### 6. 连接 dot，验证事件送达
 
 在具备资格的 ChatGPT/Codex 客户端中创建自定义 MCP 连接，服务器 URL 为自己的 Origin 加 `/mcp`，选择 OAuth。完成 Bridge 同意页和 GitHub 登录，并使用配置中的所有者身份。账号资格和 UI 可能变化，以 [OpenAI MCP Events](https://developers.openai.com/plugins/build/mcp-events)与当前客户端为准。项目没有共用公共插件 ID，也不包含别人的现成连接。
 
@@ -78,10 +88,6 @@ DotLink 是采用 [PolyForm Noncommercial 1.0.0](../../LICENSE) 的单所有者�
 在**目标个人 dot** 中要求读取 `phone_devices`，确认 `iphone-primary`，订阅 `phone.event`，过滤该设备和本人选择的 kinds，再读取 `phone_bridge_status` 确认到期时间。通知为 `notification`，充电为 `device_status`，专注为 `focus`。回调地址和签名 Secret 由接收客户端生成，不需要本人填入聊天或仓库。
 
 订阅默认及最长 24 小时，需要客户端续期；代码不保证客户端永久刷新，也不自动回放断档事件。必须跨过原到期点，再验证真实新事件，才能形成长期续期证据。
-
-### 6. 先完成一次 Charging，再按需扩展
-
-先从[原始附件页](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1)仅下载 `DotLink-Charging.shortcut`，按[手机导入说明](iphone-shortcuts.md)填写完整 HTTPS `/ingest` 地址和原始设备 token。token 不加 `Bearer`，不带首尾空格；模板会添加认证前缀。保留默认设备 ID `iphone-primary`。保存退出，再重新打开核对地址和 token 已保存。配置期间自动化保持关闭。
 
 确认 owner OAuth 与订阅已成功，再将控制台 `ENABLE_INGEST` 改为字符串 `true`，应用并检查 `/health`。手动运行 Charging 一次，完成仅连接自己 Bridge 的首次权限，确认新的 Bridge 记录与 dot 回执。`accepted` 仅表示接收；查到相同事件并看到对应 dot 结果，才证明这次处理完成。
 
