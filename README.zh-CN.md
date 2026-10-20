@@ -44,7 +44,7 @@ DotLink 面向一个所有者及其登记设备。历史手机测试使用 iOS 2
 5. 将目标 dot 通过 OAuth 连接到 `/mcp`，把[第六步提示词](docs/zh-CN/deployment.md#6-连接-dot验证通知送达)复制到接收聊天，建立仅包含 `iphone-primary` 和 `notification` 的 `phone.event` 订阅。
 6. 确认订阅后，开启服务上传及已配置的通知自动化。从选定来源产生无私人内容的新通知，核对最多三条不同新事件的回执；三条测试回复结束后保留持续订阅。
 
-同一首版源码来源的 Cloudflare Hosted Deploy、全新资源创建和 `/setup` 生成流程已于 2026-10-15 通过；那次新安装的 owner OAuth、dot 连接和手机触发尚未全部完成。另一个隔离实例已有真实 OAuth、订阅、合成事件和一次手机手动 Charging 成功记录；这些证据不能合并成一次完整新安装成功。
+历史 Hosted Deploy、OAuth 和事件送达检查分别保存在[验证记录](docs/zh-CN/validation-record.md)。不同安装实例的结果不能合并为一次完整通过；请在自己的安装上确认当前通知路径。
 
 默认使用 `workers.dev` 地址，无需购买域名。该地址和自定义域名都不保证大陆网络可达，也不改变平台服务范围。Cloudflare 和 ChatGPT 使用可能产生费用；不承诺永久免费或可用性 SLA。
 

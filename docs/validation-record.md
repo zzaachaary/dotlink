@@ -244,7 +244,6 @@ Current checks: `npm test` passed 87/87; `npm run check:release` passed the 88-f
 
 Rendered local browser checks covered 1440×1000, 390×844 and 320×720, live configuration values, actual clipboard equality, masked credential copying, language switching without regeneration, refresh clearing, and the existing-deployment path. Browser checks use temporary local values and do not configure a Worker or validate iPhone Safari. The original five public release attachments were downloaded and their SHA-256 values matched the historical assets. v0.1.0 preserves the four signed shortcut bytes; no new phone acceptance result or reliability guarantee follows from the regular release label.
 
-
 ## 2026-10-20 — current Notifications scope and owner feedback
 
 The owner reported successful Notifications setup through the public flow, while Charging was not working in the current setup. The public installation path is therefore limited to Notifications. Charging, Focus On and Focus Off are Coming soon; their existing attachments and older dated results are retained as historical artifacts, not currently supported installation choices. The feedback does not identify a Charging root cause and does not verify every notification source, independent import, renewal or long-term reliability.

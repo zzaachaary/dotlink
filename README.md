@@ -44,7 +44,7 @@ Complete one installation in this order. Continue after each step passes; troubl
 5. Connect the target dot to `/mcp` through OAuth. Copy the [Step 6 prompt](docs/deployment.md#6-connect-your-dot-and-verify-notifications) into your receiving chat to establish a `phone.event` subscription for `iphone-primary` and `notification`.
 6. Once the subscription is confirmed, enable server ingestion and the configured notification automation. Generate harmless new notifications from the selected source and confirm up to three distinct new-event acknowledgements. The subscription remains active after those test replies.
 
-Cloudflare Hosted Deploy, fresh resource creation and `/setup` generation from the same first-edition source lineage passed on 2026-10-15. Owner OAuth, dot connection and phone triggers were not all completed on that new installation. A different isolated instance has real OAuth, subscription, synthetic-event and one manual iPhone Charging success; those results cannot be combined into a complete new-installation pass.
+Historical Hosted Deploy, OAuth and event-delivery checks are documented separately in the [validation record](docs/validation-record.md). Results from different installations cannot be combined into one complete pass. Confirm the current notification path on your own installation.
 
 Use the default `workers.dev` address; buying a domain is not required. Neither that address nor a custom domain guarantees mainland-China reachability or changes platform availability. Cloudflare and ChatGPT usage may incur costs; no free-service or uptime guarantee is made.
 
