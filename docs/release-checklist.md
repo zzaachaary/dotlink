@@ -2,7 +2,7 @@
 
 [English](release-checklist.md) | [简体中文](zh-CN/release-checklist.md) · [Home](../README.md)
 
-This checklist covers the regular v0.1.0 release. The historical `v0.1.0-beta.1` tag and assets remain; v0.1.0 reuses the original signed template bytes. Release status does not replace acceptance or add phone-test evidence. Existing evidence and unfinished checks are kept separate below. See the [validation record](validation-record.md).
+This checklist covers the current Notifications-only installation path for v0.1.0. Charging, Focus On and Focus Off are **Coming soon** and are excluded from current setup and acceptance. The historical `v0.1.0-beta.1` tag and four-file release record remain; v0.1.0 reused the original signed template bytes. Release status does not replace acceptance. Existing dated evidence, current owner feedback and unfinished checks are kept separate below. See the [validation record](validation-record.md).
 
 ## Completed first prerelease record (2026-10-12)
 
@@ -21,16 +21,20 @@ This checklist covers the regular v0.1.0 release. The historical `v0.1.0-beta.1`
 - [x] Independent CLI deployment, actual setup, owner OAuth, MCP subscription and synthetic receipt/query/ACK passed on 2026-10-12, preserving the original personal Bridge.
 - [x] One manual iPhone Charging upload and matching dot result passed on 2026-10-13. This did not clear automatic-trigger or first/repeated reliability checks.
 - [x] Hosted Deploy from the same first-edition source lineage created fresh resources and passed actual setup generation, configuration and health on 2026-10-15. Its GitHub CI passed 73 unit and 17 runtime tests. These are dated results, not checks of later edits.
-- [ ] Complete owner OAuth, dot subscription and selected phone modules on the same new installation.
+- [ ] Record owner OAuth, a notification-only dot subscription and an actual notification on the same new installation; do not combine separate instances into one acceptance result.
 - [x] On 2026-10-18, the final 88-file allowlist check passed; both source exports matched all 88 files, all 35 canonical document/license texts matched, and the five original Release asset hashes matched.
 - [ ] Confirm the final commit in the [current main workflow](https://github.com/zzaachaary/dotlink/actions/workflows/check.yml?query=branch%3Amain). Historical CI counts above do not describe this result.
 
-## Manual phone acceptance
+## Current feedback and notification acceptance
 
-- [ ] Follow [deployment](deployment.md) once: deploy → seven settings → MCP subscription → manual Charging.
-- [ ] After manual Charging passes, test one locked-screen charger connection/disconnection.
-- [ ] Exercise selected Focus On/Off for the same mode and one notification source; record first/repeated behavior. Old Sleep/pop results do not validate new DND-bound templates.
-- [ ] Before making reliability claims, verify new events across the original lease deadline, network/reboot recovery, permission revocation and continued observation. There is no phone outbox or cursor replay; do not promise lossless offline recovery, instant delivery or all-app support.
+On 2026-10-20, the owner reported successful notification setup and that Charging did not work in the latest setup. Keep this report separate from the earlier dated Charging results; it does not establish a measured success rate or independently reproduced installation.
+
+- [ ] Follow [deployment](deployment.md) once: deploy → seven settings → dot connection → notification-only subscription → Notifications input binding and a real selected-source notification.
+- [ ] Confirm `iphone-primary` is enabled and subscribe to `phone.event` with arguments `{"device_ids":["iphone-primary"],"kinds":["notification"]}`; record the actual subscription expiry and any client renewal limitations.
+- [ ] Compare new automatic notifications with matching dot acknowledgements; record source, time, available event ID, first/repeated behavior and locked-screen behavior. A manual run without notification input or a history query does not prove automatic delivery. Three successful acknowledgements are a bounded test, not a success-rate guarantee; keep the subscription after the test if ongoing forwarding is requested.
+- [ ] Before making reliability claims, verify new events across the original lease deadline, network/reboot recovery, permission revocation and continued observation. There is no phone outbox or cursor replay; do not promise 100% delivery, lossless offline recovery, instant delivery or all-app support.
+
+Charging, Focus On and Focus Off remain Coming soon. Their historical records are retained above and in the validation record; no current installation or enablement step is provided for them.
 
 Describe demonstrations and social posts using actual passed scope; the owner publishes them separately. They are not installation evidence.
 

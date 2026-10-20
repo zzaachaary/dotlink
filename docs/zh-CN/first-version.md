@@ -2,6 +2,8 @@
 
 [English](../first-version.md) | [简体中文](first-version.md) · [首页](../../README.zh-CN.md)
 
+**本页是历史实现记录。当前安装只支持 Notifications 通知；Charging、Focus On 和 Focus Off 均为即将推出，旧结果和附件不代表当前支持。安装请按[通知部署指南](deployment.md)。**
+
 资料整理日期：2026-10-02。历史实机验证截至 2026-10-01；本页不是一次新的端到端测试报告。本文中的 `https://example.com`、`demo-phone`、`Example App` 和 `Work` 都是合成示例，不能直接作为生产配置。
 
 项目现名为 DotLink；本页保留原始历史记录与验证日期。新的浏览器设置主线见[部署指南](deployment.md)，不改变下文历史证据。
@@ -23,7 +25,7 @@
 
 历史记录包含部分单元／SQLite 和 workerd 检查，但测试文件随后有更新，因此不把旧测试计数当作当前版本的复测成绩。当前版本应运行本页末尾命令，并记录实际输出。
 
-## 服务端的最小接入顺序
+## 历史服务端接入顺序
 
 1. 使用自己的 Cloudflare 资源、HTTPS Origin、GitHub OAuth App 和 owner 身份部署。生产地址可形如 `https://example.com`，OAuth callback 为所配置授权 Origin 下的 `/callback`。
 2. 将 GitHub OAuth 凭据、订阅密钥封装用的随机密钥和设备登记放入 Worker Secrets。设备登记只保存设备上传令牌摘要；手机保存独立原始令牌。
@@ -32,7 +34,7 @@
 
 `PUBLIC_ORIGIN` 标识 canonical MCP Origin；可选 `AUTH_ORIGIN` 用于单独的授权 Origin。改变这些值可能需要消费者重新发现或连接。`ENABLE_INGEST` 只有精确值 `true` 才启用上传和投递。部署和设备登记脚本涉及远程写入，应在自己的配置完成后主动执行。
 
-## 快捷指令的复现结构
+## 历史快捷指令结构
 
 第一版把公共上传、事件封装和各类触发器分开，避免每个自动化重复填写 HTTP 细节。以下名称用于说明职责，不要求使用相同名称。
 
@@ -73,11 +75,9 @@
 
 运行通知可以按系统提供的选项关闭；首次授权仍需要完成。先排除会产生回执的 ChatGPT、Codex 和快捷指令自身通知，可以降低循环风险，但第一版尚未实现完整防循环逻辑。不能把空 App 列表当作“全部”，也没有证据证明未来安装的 App 会自动加入。[Apple 通知触发器](https://support.apple.com/en-ke/guide/shortcuts/apd932ff833f/ios)
 
-### 4. 充电与 Focus
+### 充电与专注：即将推出
 
-充电连接／断开时，读取电量及是否充电，组成 `device_status`，并为 `payload.measured_at` 记录真实测量时间。各状态字段由服务端独立保存最新观测，未采集的字段不会补默认值。
-
-Focus 分别使用开启和关闭触发器。每个入口明确传入模式名，例如 `Work`，以及原生布尔值 `active:true` 或 `active:false`，公共 Focus 发送器再增加 `measured_at`。这样无需在模式已关闭后猜测先前名称。开启／关闭两个方向都需要通过实际切换验证。[Apple 设置触发器](https://support.apple.com/en-ke/guide/shortcuts/apde31e9638b/ios)
+原个人实现曾记录充电变化和选定 Focus 模式切换；日期化结果保留在[验证说明](verification.md)和[验证记录](validation-record.md)，不代表当前支持。当前公开安装流程不安装或测试 Charging、Focus On 或 Focus Off。
 
 ## 第一版的具体约束
 
@@ -110,6 +110,6 @@ npm run check
 
 `npm run check` 是 Wrangler dry-run 打包，不是部署。`test:runtime` 使用 workerd，可能受到本机进程或网络沙箱权限限制；它不替代手机实测。
 
-端到端验收至少核对三种输入：一条选定 App 的真实通知、一次锁屏充电连接／断开、一次 Focus 开／关。每次分别检查触发、Bridge 持久化、webhook ACK 和目标 dot 的真实回执。进一步覆盖关闭网络、恢复网络、重启、订阅过期、重复事件、突发消息和撤销权限，才能扩大可靠性结论。
+当前验收针对本人选定来源的真实通知，分别核对触发、Bridge 持久化、webhook ACK 和匹配的 dot 自动回执。先使用[部署第六步](deployment.md#6-连接-dot验证通知送达)的三条新通知测试；断网恢复、重启、订阅过期、重复事件、突发消息和权限撤销需另行验证，才能扩大可靠性结论。
 
 手机本地 outbox、自动补传、原始通知日期、未来 App 自动覆盖和长期无提示运行仍未具备完整证据。改进顺序见[后续路线](roadmap.md)。

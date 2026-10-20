@@ -16,13 +16,29 @@ try {
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => requests.push(request.url()));
   await page.goto(`${origin}/setup`);
+  assert.equal(page.url(), `${origin}/setup`);
+  assert.equal(await page.title(), 'DotLink · Personal setup');
+  assert.equal(await page.locator('#step-6').isVisible(), true);
   const desktop = join(output, 'dotlink-setup-desktop-en.png');
   const mobile = join(output, 'dotlink-setup-mobile-zh.png');
-  await page.screenshot({ path: desktop, fullPage: true });
+  await page.locator('#step-6').screenshot({ path: desktop });
   assert.equal(await page.locator('html').getAttribute('lang'), 'en');
-  assert.equal(await page.getByRole('link', { name: 'Download templates', exact: true }).getAttribute('href'),
-    'https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0');
-  assert.equal(await page.getByRole('link', { name: 'Download templates', exact: true }).isVisible(), true);
+  assert.equal(await page.getByRole('link', { name: 'Download Notifications', exact: true }).getAttribute('href'),
+    'https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Notifications.shortcut');
+  assert.equal(await page.locator('[data-module], #guide-battery, #guide-focus').count(), 0);
+  assert.equal(await page.locator('.upcoming').count(), 2);
+  for (const card of await page.locator('.upcoming').all()) assert.match(await card.innerText(), /Coming soon/);
+  const prompt = page.locator('#subscription-prompt');
+  const englishPrompt = await prompt.inputValue();
+  assert.match(englishPrompt, /arguments \{"device_ids":\["iphone-primary"\],"kinds":\["notification"\]\}/);
+  assert.match(englishPrompt, /before refreshBefore/);
+  await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', {
+    configurable: true, value: { writeText: async value => { window.copiedPrompt = value; } },
+  }));
+  await page.locator('[data-copy="subscription-prompt"]').click();
+  assert.equal(await page.evaluate(() => window.copiedPrompt), englishPrompt);
+  assert.equal(await page.locator('#device-token').inputValue(), '');
+  assert.match(await page.locator('#status').textContent(), /Prompt copied/);
   assert.equal(await page.locator('#mcp-fresh-url').inputValue(), `${origin}/mcp`);
   assert.equal(await page.locator('#generate').isDisabled(), true);
   await page.locator('#fresh-install').check();
@@ -33,11 +49,15 @@ try {
   assert.equal(await page.locator('#device-token').isVisible(), false);
   await page.getByRole('button', { name: '简体中文', exact: true }).click();
   assert.equal(await page.locator('html').getAttribute('lang'), 'zh-CN');
-  assert.equal(await page.getByRole('link', { name: '下载模板', exact: true }).isVisible(), true);
-  await page.locator('[data-module="notifications"]').check();
+  assert.equal(await page.getByRole('link', { name: '下载通知快捷指令', exact: true }).isVisible(), true);
   assert.match(await page.locator('#guide-notifications').innerText(), /ChatGPT、Codex/);
-  await page.locator('[data-module="focus"]').check();
-  assert.equal(await page.locator('#guide-focus').isVisible(), true);
+  for (const card of await page.locator('.upcoming').all()) assert.match(await card.innerText(), /即将推出/);
+  const chinesePrompt = await prompt.inputValue();
+  assert.match(chinesePrompt, /请使用我已连接的 DotLink/);
+  assert.match(chinesePrompt, /arguments 为 \{"device_ids":\["iphone-primary"\],"kinds":\["notification"\]\}/);
+  await page.locator('[data-copy="subscription-prompt"]').click();
+  assert.equal(await page.evaluate(() => window.copiedPrompt), chinesePrompt);
+  assert.match(await page.locator('#status').textContent(), /提示词已复制/);
   assert.equal(await page.locator('#device-token').inputValue(), first);
   assert.equal(await page.locator('#generate').isDisabled(), true);
   await page.locator('[data-reveal="device-token"]').click();
@@ -56,9 +76,18 @@ try {
   assert.equal(await page.locator('#device-token').evaluate(element => element.selectionEnd - element.selectionStart), 43);
   await page.locator('[data-reveal="device-token"]').click();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.evaluate(() => scrollTo(0, 0));
-  await page.screenshot({ path: mobile, fullPage: true });
+  await page.getByRole('button', { name: '简体中文', exact: true }).click();
+  await page.locator('#step-6').screenshot({ path: mobile });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.setViewportSize({ width: 320, height: 740 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.locator('[data-copy="subscription-prompt"]').click();
+  assert.equal(await prompt.evaluate(element => element.selectionEnd - element.selectionStart), chinesePrompt.length);
+  assert.match(await page.locator('#status').textContent(), /已选中提示词/);
+  assert.doesNotMatch(await page.locator('#status').textContent(), /隐藏/);
+  await page.getByRole('button', { name: 'English', exact: true }).click();
+  assert.equal(await prompt.inputValue(), englishPrompt);
+  assert.equal(await page.locator('#device-token').inputValue(), first);
   await page.reload();
   assert.equal(await page.locator('html').getAttribute('lang'), 'en');
   assert.equal(await page.locator('#device-token').inputValue(), '');
@@ -67,5 +96,6 @@ try {
   assert.deepEqual(errors, []);
   assert.equal(requests.every(request => request.startsWith(`${origin}/setup`)), true);
   assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);
-  console.log(JSON.stringify({ result: 'passed', pageErrors: errors.length, externalRequests: 0, desktop, mobile }));
+  console.log(JSON.stringify({ result: 'passed', viewports: [1440, 390, 320], pageErrors: errors.length,
+    externalRequests: 0, notificationOnly: true, bilingualPromptCopy: true, desktop, mobile }));
 } finally { await browser.close(); }

@@ -2,32 +2,30 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-Send selected iPhone notifications, charging changes, and Focus changes to your own ChatGPT dot using iOS Shortcuts and a self-hosted Cloudflare bridge.
+Send selected iPhone notifications to your own ChatGPT dot using iOS Shortcuts and a self-hosted Cloudflare bridge.
 
-**DotLink v0.1.0 — self-hosted release.** The [v0.1.0 release](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0) includes the bridge, bilingual setup guide and four sanitized Apple-signed templates. The templates retain their original signed bytes from `v0.1.0-beta.1`; this release adds no new phone acceptance results. Each new installation and its selected triggers still require manual acceptance, and stable reliability is not yet established. See the [validation record](docs/validation-record.md) for passed and pending checks. DotLink is source-available under PolyForm Noncommercial 1.0.0 and requires your own accounts and manual phone configuration.
+**DotLink v0.1.0 — Notifications.** The current installation path covers Notifications only. Charging, Focus On and Focus Off are **Coming soon**; their old release attachments are historical artifacts, not currently supported installation options. The owner reported successful Notifications setup on 2026-10-20; this does not establish all-app coverage or long-term reliability. See the [validation record](docs/validation-record.md). DotLink is source-available under PolyForm Noncommercial 1.0.0 and requires your own accounts and manual phone configuration.
 
 DotLink is for one owner and their registered devices. Historical phone testing used iOS 27 and selected sources. It is not affiliated with or endorsed by Apple, Cloudflare, GitHub, or OpenAI.
 
 ## Download templates
 
-| Module | Signed shortcut |
+| Module | Status |
 | --- | --- |
-| Notifications | [DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Notifications.shortcut) |
-| Charging | [DotLink-Charging.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Charging.shortcut) |
-| Focus on | [DotLink-Focus-On.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-On.shortcut) |
-| Focus off | [DotLink-Focus-Off.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-Off.shortcut) |
+| Notifications | [Download DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Notifications.shortcut) |
+| Charging | Coming soon |
+| Focus On / Focus Off | Coming soon |
 
-[SHA-256 checksums](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/SHA256SUMS) · [Import instructions](docs/iphone-shortcuts.md). Configure your own URL/token and bind the phone triggers before enabling Automation.
+[SHA-256 checksums](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/SHA256SUMS) · [Notification import instructions](docs/iphone-shortcuts.md). The checksum file also retains historical assets; it does not make them current installation options. Configure your own URL/token and one permitted notification source before enabling Automation.
 
 ## Capabilities and limits
 
 | Capability | Current evidence and limits |
 | --- | --- |
 | Selected app notifications | Some WeChat, Douyin, phone, and mail notifications reached the original personal dot in historical testing. Only fields actually supplied by iOS can be forwarded. |
-| Charging and battery | Lock-screen charger connection/disconnection reported measured battery and charging state. This is not continuous battery monitoring. |
-| Focus | Three selected modes were historically tested in both directions. Reports name, state, and time; does not control the phone. |
+| Charging | Coming soon; historical tests do not establish current support. |
+| Focus On / Focus Off | Coming soon; historical tests do not establish current support. |
 | Query and push | OAuth-protected MCP tools, event subscriptions, signed callbacks, and bounded server retries. |
-| Other protocol fields | Location, connection, app activity, low-power mode, and health support in the protocol does not mean an iPhone collector is enabled or verified. |
 | Offline and recovery | No persistent phone outbox; failed phone uploads may be lost. No cursor replay. Real cross-day renewal remains unverified. |
 | Coverage | No all-app guarantee, automatic enrollment of future apps, historical chat access, or full SMS/iMessage/attachment guarantee. |
 
@@ -35,16 +33,16 @@ Historical results were recorded through 2026-10-01 and documented on 2026-10-02
 
 ## Install on your own accounts
 
-You need an iPhone with the required iOS 27 Shortcuts triggers, your own Cloudflare and GitHub accounts, and a ChatGPT dot account that can connect to custom MCP services and subscribe to MCP Events. An ordinary model API or a client that only calls MCP tools is not equivalent.
+You need an iPhone that actually provides the required Notification Shortcuts trigger, your own Cloudflare and GitHub accounts, and a ChatGPT dot account that can connect to custom MCP services and subscribe to MCP Events. An ordinary model API or a client that only calls MCP tools is not equivalent.
 
 Complete one installation in this order. Continue after each step passes; troubleshoot only the step that fails:
 
-1. Use [Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) to create a separate Worker in **your own Cloudflare account**, initially without variables or Secrets.
-2. Open the new Worker’s `/setup`, select a language, and privately save your generated device credentials and sealing key.
-3. Create a GitHub OAuth App, then enter the **3 variables and 4 Secrets** in the [deployment guide](docs/deployment.md). Keep `ENABLE_INGEST=false` and require `/health` to return `200`.
-4. Connect the target dot to `/mcp` through OAuth, read the device, and create a `phone.event` subscription with a valid expiry.
-5. **Import only Charging first.** Enter your complete HTTPS `/ingest` URL and raw device token (no `Bearer` prefix or surrounding whitespace), save, and reopen to check. Enable server ingestion, run it manually once, complete first-use permissions, and compare the Bridge record and dot response.
-6. After that manual pass, enable Charging automation and test one locked-screen connection and disconnection. Then add Focus On/Off and one notification source if wanted, using the [phone guide](docs/iphone-shortcuts.md).
+1. Use [Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) to create a separate Worker in your own Cloudflare account, initially without variables or Secrets.
+2. Open the new Worker's `/setup`, select a language, create your GitHub OAuth App, and privately save your generated device credentials and sealing key.
+3. Apply the **3 variables and 4 Secrets** in the [deployment guide](docs/deployment.md). Keep `ENABLE_INGEST=false` and require `/health` to return `200`.
+4. Import **DotLink-Notifications**. Save your full HTTPS `/ingest` URL and raw device token without `Bearer` or whitespace. Keep Automation off while selecting one allowed source and binding its App/Title/Body fields; exclude ChatGPT, Codex and Shortcuts.
+5. Connect the target dot to `/mcp` through OAuth. Copy the [Step 6 prompt](docs/deployment.md#6-connect-your-dot-and-verify-notifications) into your receiving chat to establish a `phone.event` subscription for `iphone-primary` and `notification`.
+6. Once the subscription is confirmed, enable server ingestion and the configured notification automation. Generate harmless new notifications from the selected source and confirm up to three distinct new-event acknowledgements. The subscription remains active after those test replies.
 
 Cloudflare Hosted Deploy, fresh resource creation and `/setup` generation from the same first-edition source lineage passed on 2026-10-15. Owner OAuth, dot connection and phone triggers were not all completed on that new installation. A different isolated instance has real OAuth, subscription, synthetic-event and one manual iPhone Charging success; those results cannot be combined into a complete new-installation pass.
 
@@ -57,7 +55,6 @@ Read the [deployment guide](docs/deployment.md) for the browser flow and the ret
 ```mermaid
 flowchart LR
     A[Selected notifications] --> C[iPhone Shortcuts]
-    B[Charging or Focus changes] --> C
     C -->|HTTPS + device upload token| D[Cloudflare Worker]
     D --> E[SQLite Durable Object<br/>events and delivery outbox]
     E -->|Signed MCP Events callback| F[Personal dot]
@@ -73,7 +70,7 @@ An upload `202` proves bridge persistence. A callback `2xx` proves receiver ackn
 | Topic | Guide |
 | --- | --- |
 | Browser setup and advanced deployment | [Deployment](docs/deployment.md) |
-| Optional phone modules and manual recovery | [iPhone Shortcuts](docs/iphone-shortcuts.md) |
+| Notification installation and troubleshooting | [iPhone Shortcuts](docs/iphone-shortcuts.md) |
 | Data flow and permissions | [Architecture](docs/architecture.md) |
 | First implementation and historical limits | [First version](docs/first-version.md) |
 | Identity, networks, renewal, and service delivery | [FAQ](docs/faq.md) |

@@ -19,7 +19,7 @@ function createCredentialSession(generator = generateCredentials) {
     async generate(freshInstallAcknowledged, secureContext) {
       if (!freshInstallAcknowledged) throw new Error('fresh_install_required');
       if (!secureContext) throw new Error('secure_context_required');
-      // Repeated clicks share the first operation; language and module controls never call this.
+      // Repeated clicks share the first operation; language controls never call this.
       pending ??= generator().then(value => { credentials = value; return value; });
       return pending;
     },
@@ -55,6 +55,9 @@ function setupApp(sessionFactory, generator) {
     document.querySelectorAll('[data-config-ready]').forEach(element => { element.hidden = !ready; });
   };
   const translateAttributes = () => {
+    document.querySelectorAll('[data-value-en]').forEach(element => {
+      element.value = t(element.dataset.valueEn, element.dataset.valueZh);
+    });
     document.querySelectorAll('[data-placeholder-en]').forEach(element => {
       element.setAttribute('placeholder', t(element.dataset.placeholderEn, element.dataset.placeholderZh));
     });
@@ -104,14 +107,18 @@ function setupApp(sessionFactory, generator) {
     try {
       if (!globalThis.isSecureContext || !navigator.clipboard?.writeText) throw new Error('clipboard_unavailable');
       await navigator.clipboard.writeText(value);
-      status.textContent = t('Copied. Keep private credentials in your own password manager.', '已复制。请将私密凭据保存在自己的密码管理器中。');
+      status.textContent = field.id === 'subscription-prompt'
+        ? t('Prompt copied. Paste it into your dot conversation.', '提示词已复制，请粘贴到目标 dot 的聊天中。')
+        : t('Copied. Keep private credentials in your own password manager.', '已复制。请将私密凭据保存在自己的密码管理器中。');
     } catch {
       // Safari can deny clipboard access. An explicit copy click may reveal for manual selection.
       field.hidden = false;
       const mask = document.querySelector('[data-mask="' + field.id + '"]');
       if (mask) mask.hidden = true;
       field.focus(); field.select(); showLabels();
-      status.textContent = t('Clipboard unavailable. The value is selected; use your device’s Copy command, then hide it.', '剪贴板不可用。已选中内容，请用设备的“复制”命令，然后隐藏。');
+      status.textContent = field.id === 'subscription-prompt'
+        ? t('Clipboard unavailable. The prompt is selected; use your device’s Copy command.', '剪贴板不可用。已选中提示词，请用设备的“复制”命令。')
+        : t('Clipboard unavailable. The value is selected; use your device’s Copy command, then hide it.', '剪贴板不可用。已选中内容，请用设备的“复制”命令，然后隐藏。');
     }
   }));
   document.querySelectorAll('[data-reveal]').forEach(button => button.addEventListener('click', () => {
@@ -146,11 +153,8 @@ function setupApp(sessionFactory, generator) {
       showLabels();
     }
   }));
-  document.querySelectorAll('[data-module]').forEach(input => input.addEventListener('change', () => {
-    byId('guide-' + input.dataset.module).hidden = !input.checked;
-  }));
   byId('insecure').hidden = Boolean(globalThis.isSecureContext && globalThis.crypto?.subtle);
-  updateConfiguration(); translateAttributes(); showLabels(); updateGeneration();
+  translateAttributes(); updateConfiguration(); showLabels(); updateGeneration();
 }
 
 setupApp(createCredentialSession, generateCredentials);

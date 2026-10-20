@@ -2,7 +2,7 @@
 
 [English](validation-record.md) | [简体中文](zh-CN/validation-record.md) · [Home](../README.md)
 
-This is a chronological evidence log. Statements such as “unpublished” describe their dated checkpoint; use [deployment](deployment.md) for current installation instructions.
+This is a chronological evidence log. Statements such as “unpublished” and passed module checks describe their dated checkpoint. The current installation path is **Notifications only**; Charging, Focus On and Focus Off are **Coming soon**. Historical attachments and successes do not establish current support. Use [deployment](deployment.md) for current installation instructions.
 
 ## 2026-10-02 — original local source draft
 
@@ -243,3 +243,12 @@ The owner authorized v0.1.0 as a regular release. Step 4 now mirrors the current
 Current checks: `npm test` passed 87/87; `npm run check:release` passed the 88-file allowlist; `git diff --check` passed. The complete local runtime run passed 17/18: the remaining assertion expected a title without attributes, while the localized title now includes language attributes. After correcting that assertion to check both title translations, its complete runtime test file passed 6/6. Other runtime files were not redundantly rerun locally. The complete run included the successful actual Wrangler bundle test. `npm audit --omit=dev --json` reported zero production dependency advisories; this was not a fresh full development dependency audit. No dependencies changed.
 
 Rendered local browser checks covered 1440×1000, 390×844 and 320×720, live configuration values, actual clipboard equality, masked credential copying, language switching without regeneration, refresh clearing, and the existing-deployment path. Browser checks use temporary local values and do not configure a Worker or validate iPhone Safari. The original five public release attachments were downloaded and their SHA-256 values matched the historical assets. v0.1.0 preserves the four signed shortcut bytes; no new phone acceptance result or reliability guarantee follows from the regular release label.
+
+
+## 2026-10-20 — current Notifications scope and owner feedback
+
+The owner reported successful Notifications setup through the public flow, while Charging was not working in the current setup. The public installation path is therefore limited to Notifications. Charging, Focus On and Focus Off are Coming soon; their existing attachments and older dated results are retained as historical artifacts, not currently supported installation choices. The feedback does not identify a Charging root cause and does not verify every notification source, independent import, renewal or long-term reliability.
+
+The current guide configures one permitted Notification source, excludes ChatGPT/Codex/Shortcuts, and provides an English/Chinese Step 6 prompt shared with `/setup`. It requests an actual matching MCP Events subscription using `name:phone.event` and `arguments` limited to `iphone-primary` and `notification`, then three distinct automatically received notification acknowledgements. Client-held callback/signing credentials remain private; unsupported subscription, chat-delivery or renewal capabilities must be disclosed. Three test replies do not cancel the ongoing subscription, and notification content does not authorize actions.
+
+This documentation update performs no new phone run and does not modify the signed shortcut bytes or the owner's deployed Worker. Earlier success and failure records above remain dated evidence, not new acceptance results.

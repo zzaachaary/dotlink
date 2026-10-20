@@ -2,6 +2,8 @@
 
 [English](architecture.md) | [简体中文](zh-CN/architecture.md) · [Home](../README.md)
 
+**Current installation: Notifications only. Charging, Focus On and Focus Off are Coming soon. The wider protocol and historical implementation below do not make those phone modules currently supported.**
+
 The original architecture record was compiled on 2026-10-02 from the first implementation and phone evidence through 2026-10-01. Documentation changes do not constitute new phone or live-service testing.
 
 DotLink sends owner-selected iPhone events to a connected, subscribed ChatGPT dot. The phone collects; the bridge authenticates, persists, and delivers; the dot interprets. The phone uses system Shortcuts, with no resident custom iOS app or chat-database access.
@@ -11,7 +13,6 @@ DotLink sends owner-selected iPhone events to a connected, subscribed ChatGPT do
 ```mermaid
 flowchart LR
   A[Selected app notifications] --> S[iPhone Shortcuts]
-  B[Charging or Focus changes] --> S
   S -->|HTTPS POST /ingest<br/>device upload token| W[Cloudflare Worker]
   W --> D[SQLite Durable Object<br/>events and outbox]
   D -->|Signed MCP Events webhook| C[ChatGPT event receiver]
@@ -33,7 +34,7 @@ Only content supplied by iOS can be forwarded. If no notification is produced, a
 
 Messages/SMS has a separate Message trigger. It can use the same upload protocol but needs separate setup and real-message verification. Other apps' successful notifications do not prove SMS support. [Apple communication triggers](https://support.apple.com/en-ke/guide/shortcuts/apdd711f9dff/ios).
 
-A `focus` event reports mode name, enabled/disabled state, and measurement time. It does not control Focus remotely or calculate session duration. This implementation sends no phone-control commands from the dot.
+Charging and Focus On/Off are **Coming soon**. Their existing protocol definitions remain for historical compatibility; the current phone guide covers Notifications only. DotLink sends no phone-control commands.
 
 ## Three distinct credentials
 

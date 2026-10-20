@@ -10,22 +10,22 @@
 
 ## 当前正式版 v0.1.0：自己的账号，浏览器优先
 
-目标主线为官方 Deploy to Cloudflare → 自己 Worker 的双语 `/setup` → 本人手动填写控制台变量／Secrets、GitHub OAuth App → 自己的 dot 连接 → 独立可选通知、充电、Focus 模块。
+当前主线为官方 Deploy to Cloudflare → 自己 Worker 的双语 `/setup` → 本人手动填写控制台变量／Secrets、GitHub OAuth App → 自己的 dot 连接与通知订阅 → Notifications 快捷指令与真实通知验收。Charging、Focus On 和 Focus Off 均为**即将推出**；当前指南不提供它们的配置或启用步骤。
 
 向导通过 Web Crypto 在浏览器本地生成凭据，不接收 Cloudflare API Token 或 GitHub Client Secret，仅适用于全新部署。控制台变量应在重复部署后保留；不能静默覆盖 registry 或封装密钥。默认 `workers.dev` 无需购买域名，但不保证任何地区可达。
 
-[正式版 `v0.1.0`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0)包含 Bridge、双语浏览器指南，以及 Notifications、Charging、Focus On、Focus Off 四份脱敏签名文件。模板沿用原 Beta 字节，本次发布没有新增真机验收结果。四份均已通过 Mac 重新导入与同账号 iPhone 同步，手机触发器仍须补加；新的 Charging 副本已有真机 → Bridge → dot 的对应结果。新通知／Focus 副本的真实触发、iPhone 直接导入及独立账号导入仍待完成。2026-10-15 Hosted Deploy 初装已通过；该新安装的 owner／dot／手机全链路仍待验收。跨日续期、网络变化和恢复能力另行验证，见[验证记录](validation-record.md)。
+历史 v0.1.0 发布包含 Notifications、Charging、Focus On、Focus Off 四份脱敏签名文件，沿用原 Beta 字节，发布时没有增加真机验收结果。按日期保留的记录包括 Mac 重新导入、同账号 iPhone 同步及部分 Charging 成功结果；这些仍是历史事实。2026-10-20，所有者反馈通知设置成功，但最新设置中的 Charging 无法工作。因此当前公开路径聚焦 Notifications；这份反馈不等于独立安装复现或已测得的送达率。iPhone 直接导入、独立账号安装、跨日续期、网络变化和恢复能力仍须分别验收，见[验证记录](validation-record.md)。
 
 ## 阶段一：可分享的复现包
 
 目标体验是“导入 → 配置自己的连接 → 选择来源 → 本人授权 → 真实事件验收”。
 
-- Beta 首次提供、v0.1.0 继续保留：四份脱敏签名文件、带版本的 Release 下载、校验值，以及填写本人连接设置的导入问题。
-- 后续验证其他导入路径与独立配置手机上的实际通知／Focus 输入绑定，保留已成功的事件字段和内联上传动作。
-- 将通知、充电和 Focus 分成可选择的模块，默认只开启用户明确选择的范围。
-- 保留各模块的合成测试和真实系统事件测试步骤；错误页面只显示阶段与错误类别，不回显令牌或通知正文。
+- 当前安装路径只提供 Notifications 签名模板、带版本的下载、校验值和本人连接配置的导入问题；四份文件的 Beta／v0.1.0 历史与当前可用范围分开记录。
+- 验证独立通知安装，以及真实通知的 App／Title／Body 输入绑定；保留已成功的事件字段和内联上传动作。
+- Charging、Focus On 和 Focus Off 保持即将推出。提供安装前，分别验证模板、首次与重复真实触发、权限及独立安装。
+- 保留合成测试和真实系统事件检查；错误页面只显示阶段与类别，不回显令牌或通知正文。配置成功不等于 100% 送达。
 
-Apple 正式支持以 iCloud 链接或文件分享快捷指令，并支持导入问题。iOS 27 的自动化已经附在 shortcut 中，官方也说明跨设备同步时自动化为关闭状态。因此不能照搬旧版“个人自动化无法分享”的结论，但跨账户导入时 App 选择、Focus 映射和触发器保留情况仍需实测。[分享快捷指令](https://support.apple.com/guide/shortcuts/share-shortcuts-apdf01f8c054/ios)、[导入问题](https://support.apple.com/guide/shortcuts/add-import-questions-to-shared-shortcuts-apdf330fd3a0/10.0/ios/27)、[自动化简介](https://support.apple.com/en-ke/guide/shortcuts/apd690170742/ios)
+Apple 正式支持以 iCloud 链接或文件分享快捷指令，并支持导入问题。iOS 27 的自动化已经附在 shortcut 中，官方也说明跨设备同步时自动化为关闭状态。因此不能照搬旧版“个人自动化无法分享”的结论，但跨账户导入时 App 选择及通知触发器保留情况仍需实测；Focus 映射属于未来模块的验收。[分享快捷指令](https://support.apple.com/guide/shortcuts/share-shortcuts-apdf01f8c054/ios)、[导入问题](https://support.apple.com/guide/shortcuts/add-import-questions-to-shared-shortcuts-apdf330fd3a0/10.0/ios/27)、[自动化简介](https://support.apple.com/en-ke/guide/shortcuts/apd690170742/ios)
 
 **更广泛的可移植性验收：**另一部使用独立账户的受支持 iPhone 能从公开模板完成接入；模板中没有原作者数据；用户本人能看到并决定数据目的地、来源范围及自动化开关。首版尚未完成这项更广泛的验收，发布不代表承诺一键安装。
 

@@ -2,6 +2,8 @@
 
 [English](../architecture.md) | [简体中文](architecture.md) · [首页](../../README.zh-CN.md)
 
+**当前安装只提供 Notifications 通知。Charging、Focus On 和 Focus Off 均为即将推出；下文更广的协议和历史实现不代表这些手机模块当前受支持。**
+
 资料整理日期：2026-10-02。本文描述第一版源码及截至 2026-10-01 的历史实机验证边界，不代表在整理文档时重新测试了手机或线上服务。
 
 这个项目把用户主动选择的 iPhone 事件交给已经连接并订阅的 ChatGPT dot。手机负责采集，Bridge 负责鉴权、持久化和投递，dot 负责理解事件。第一版手机端使用系统快捷指令，没有常驻的自研 iOS App，也不读取聊天数据库。
@@ -11,7 +13,6 @@
 ```mermaid
 flowchart LR
   A[选定 App 的系统通知] --> S[iPhone 快捷指令]
-  B[充电或 Focus 变化] --> S
   S -->|HTTPS POST /ingest<br/>设备上传令牌| W[Cloudflare Worker]
   W --> D[SQLite Durable Object<br/>事件与投递队列]
   D -->|签名的 MCP Events webhook| C[ChatGPT 事件接收端]
@@ -33,7 +34,7 @@ Apple 的 iOS 27 文档明确提供 Notification trigger，可选择 App 和内�
 
 运营商 SMS／Messages 有独立的 Message trigger。它可以复用相同上传协议，但需要单独配置和真实短信验证；已有其他 App 通知通过，不能当作 SMS 已通过。[Apple Communication triggers](https://support.apple.com/en-ke/guide/shortcuts/apdd711f9dff/ios)
 
-`focus` 事件报告模式名称、开启／关闭及测量时间。它不是远程控制勿扰模式的接口；第一版没有从 dot 下发手机控制命令，也不计算 Focus 使用时长。
+Charging 和 Focus On/Off 均为**即将推出**。现有协议定义保留历史兼容用途，当前手机指南仅说明 Notifications；DotLink 不向手机发送控制命令。
 
 ## 三组不同的权限
 

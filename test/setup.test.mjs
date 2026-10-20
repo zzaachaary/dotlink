@@ -57,12 +57,42 @@ test('generated credentials use separate 32-byte draws and match real server aut
   assert.deepEqual(await unseal(await seal(value, credentials.sealKey, 'test'), credentials.sealKey, 'test'), value);
 });
 
-test('setup points both languages to published templates and lists every excluded notification source', async () => {
+test('setup offers only Notifications and marks Charging and Focus as coming soon in both languages', async () => {
   const html = await setupResponse(new Request('https://fresh.example/setup')).text();
-  assert.match(html, /https:\/\/github.com\/zzaachaary\/dotlink\/releases\/tag\/v0\.1\.0"/);
-  assert.doesNotMatch(html, /Importable templates are not available yet|暂未提供可导入模板/);
+  assert.match(html, /releases\/download\/v0\.1\.0\/DotLink-Notifications\.shortcut"/);
+  assert.doesNotMatch(html, /data-module=|id="guide-(?:battery|focus)"|href="[^"]*DotLink-(?:Charging|Focus-On|Focus-Off)\.shortcut/);
+  assert.match(html, /Coming soon/);
+  assert.match(html, /即将推出/);
+  assert.match(html, /Focus On &amp; Off|Focus On &#38; Off/);
+  assert.match(html, /id="subscription-prompt"[^>]*data-value-en=/);
+  assert.match(html, /events\/subscribe/);
+  assert.match(html, /refreshBefore/);
   assert.match(html, /ChatGPT, Codex and Shortcuts/);
   assert.match(html, /ChatGPT、Codex 和快捷指令/);
+});
+
+test('subscription prompt copies the active language without generating or copying credentials', async () => {
+  const browser = setupBrowser(SETUP_SCRIPT), field = browser.elements.get('subscription-prompt');
+  const copy = browser.groups['[data-copy]'].find(button => button.dataset.copy === field.id);
+  assert.equal(field.value, field.dataset.valueEn);
+  assert.equal(copy.disabled, false);
+  await copy.dispatch('click');
+  assert.equal(browser.copies.at(-1), field.dataset.valueEn);
+  assert.match(browser.elements.get('status').textContent, /Prompt copied/);
+  await browser.groups['[data-language]'][1].dispatch('click');
+  assert.equal(field.value, field.dataset.valueZh);
+  await copy.dispatch('click');
+  assert.equal(browser.copies.at(-1), field.dataset.valueZh);
+  assert.match(browser.elements.get('status').textContent, /提示词已复制/);
+  assert.equal(browser.elements.get('device-token').value, '');
+  assert.equal(browser.elements.get('credentials').hidden, true);
+
+  const denied = setupBrowser(SETUP_SCRIPT, { clipboardAvailable: false });
+  await denied.groups['[data-language]'][1].dispatch('click');
+  await denied.groups['[data-copy]'].find(button => button.dataset.copy === field.id).dispatch('click');
+  assert.equal(denied.elements.get(field.id).selected, true);
+  assert.equal(denied.elements.get(field.id).value, field.dataset.valueZh);
+  assert.doesNotMatch(denied.elements.get('status').textContent, /隐藏/);
 });
 
 test('credential session starts empty, requires fresh-install confirmation and never silently rotates', async () => {
@@ -129,7 +159,7 @@ test('step four copies current configuration and prevents empty or invalid GitHu
   assert.equal(copy('config-client-id').disabled, true);
 });
 
-test('step four credentials copy while hidden and remain stable across language, mode and module changes', async () => {
+test('step four credentials copy while hidden and remain stable across language and mode changes', async () => {
   const browser = setupBrowser(SETUP_SCRIPT), field = id => browser.elements.get(id);
   const copy = id => browser.groups['[data-copy]'].find(button => button.dataset.copy === id);
   field('fresh-install').checked = true;
@@ -155,8 +185,6 @@ test('step four credentials copy while hidden and remain stable across language,
   assert.equal(before.every(([id]) => field(id).hidden), true, 'existing mode masks both credential locations');
   assert.equal(browser.groups['[data-mask]'].every(mask => !mask.hidden), true);
   await browser.groups['[data-mode]'][0].dispatch('click');
-  browser.groups['[data-module]'][0].checked = true;
-  await browser.groups['[data-module]'][0].dispatch('change');
   assert.deepEqual(before.map(([id]) => [id, field(id).value]), before);
   assert.equal(field('generate').disabled, true);
   assert.equal(copy('config-seal-key').getAttribute('aria-label'), '复制 config-seal-key');

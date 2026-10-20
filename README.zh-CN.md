@@ -2,32 +2,30 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-通过 iPhone 系统快捷指令和自己部署的 Cloudflare Bridge，将选定 App 的新通知、充电变化与专注模式变化交给自己的 ChatGPT dot。
+通过 iPhone 系统快捷指令和自己部署的 Cloudflare Bridge，将选定 App 的新通知交给自己的 ChatGPT dot。
 
-**DotLink v0.1.0 正式版。** [v0.1.0 Release](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0) 提供 Bridge、双语设置教程与四份脱敏 Apple 签名模板。模板沿用 `v0.1.0-beta.1` 的原始签名字节，本次发布没有新增真机验收结果。每个新安装及所选手机触发器仍需本人验收，尚不作稳定性保证。已通过与待验证的范围见[验证记录](docs/zh-CN/validation-record.md)。本项目采用 PolyForm Noncommercial 1.0.0，需要自己的账号和手工手机配置。
+**DotLink v0.1.0：Notifications 通知。** 当前安装流程只提供 Notifications。Charging、Focus On 和 Focus Off 均为**即将推出**；旧 Release 附件作为历史产物保留，不属于当前支持的安装选项。用户于 2026-10-20 反馈通知设置成功；这不代表所有 App 或长期可靠性均已验收。详见[验证记录](docs/zh-CN/validation-record.md)。本项目以源码公开方式采用 PolyForm Noncommercial 1.0.0 非商业许可，需要自己的账号和手工手机配置。
 
 DotLink 面向一个所有者及其登记设备。历史手机测试使用 iOS 27，只覆盖选定来源。项目与 Apple、Cloudflare、GitHub、OpenAI 没有官方隶属或背书关系。
 
 ## 下载模板
 
-| 模块 | 签名快捷指令 |
+| 模块 | 状态 |
 | --- | --- |
-| 通知 | [DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Notifications.shortcut) |
-| 充电 | [DotLink-Charging.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Charging.shortcut) |
-| 专注开启 | [DotLink-Focus-On.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-On.shortcut) |
-| 专注关闭 | [DotLink-Focus-Off.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Focus-Off.shortcut) |
+| Notifications 通知 | [下载 DotLink-Notifications.shortcut](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/DotLink-Notifications.shortcut) |
+| Charging 充电 | 即将推出 |
+| Focus On / Focus Off | 即将推出 |
 
-[SHA-256 校验文件](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/SHA256SUMS) · [导入说明](docs/zh-CN/iphone-shortcuts.md)。填写自己的地址／令牌，绑定手机触发器之后再开启 Automation。
+[SHA-256 校验文件](https://github.com/zzaachaary/dotlink/releases/download/v0.1.0/SHA256SUMS) · [通知导入说明](docs/zh-CN/iphone-shortcuts.md)。校验文件仍包含历史附件，不代表这些附件属于当前安装选项。填写自己的地址／令牌并绑定一个允许的通知来源后，再开启 Automation。
 
 ## 能力与边界
 
 | 能力 | 当前证据与限制 |
 | --- | --- |
 | 选定 App 通知 | 历史测试中，部分微信、抖音、电话和邮件通知进入了原个人 dot；只传 iOS 实际提供的字段。 |
-| 充电与电量 | 锁屏插入／拔出充电器时上报测得的电量和充电状态；不是连续电量监控。 |
-| 专注模式 | 三个选定模式的开启／关闭曾通过历史验证；记录名称、状态和时间，不控制手机。 |
+| Charging 充电 | 即将推出；历史测试不代表当前支持。 |
+| Focus On / Focus Off | 即将推出；历史测试不代表当前支持。 |
 | 查询与推送 | OAuth 保护的 MCP 工具、事件订阅、签名回调及云端有限重试。 |
-| 其他协议字段 | 位置、连接、App 活动、省电和健康字段存在，不代表 iPhone 已启用或验证对应采集。 |
 | 离线与恢复 | 没有手机持久 outbox，上传失败可能漏事件；不支持游标重放；真实跨日续期仍待验证。 |
 | 覆盖范围 | 不保证全部 App、未来新 App 自动加入、历史聊天读取，或完整 SMS／iMessage／附件采集。 |
 
@@ -35,16 +33,16 @@ DotLink 面向一个所有者及其登记设备。历史手机测试使用 iOS 2
 
 ## 用自己的账号安装
 
-需要具备所用 iOS 27 快捷指令触发器的 iPhone、自己的 Cloudflare 和 GitHub 账号，以及可以连接自定义 MCP 服务并订阅 MCP Events 的 ChatGPT dot 账号。普通模型 API 或只能调用 MCP 工具的客户端不等同于这项能力。
+需要实际提供所需 Notification 快捷指令触发器的 iPhone、自己的 Cloudflare 和 GitHub 账号，以及可以连接自定义 MCP 服务并订阅 MCP Events 的 ChatGPT dot 账号。普通模型 API 或只能调用 MCP 工具的客户端不等同于这项能力。
 
 按下面的顺序完成一次安装；每步成功后再继续，出错只检查当前步骤：
 
-1. 从 [Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) 在**自己的 Cloudflare 账号**创建独立 Worker，首次不填写变量和 Secrets。
-2. 打开新 Worker 的 `/setup`，选择语言，生成并私下保存自己的设备凭据与封装密钥。
-3. 创建 GitHub OAuth App，再按[部署指南](docs/zh-CN/deployment.md)填写 **3 个变量和 4 个 Secrets**；保持 `ENABLE_INGEST=false`，确认 `/health` 返回 `200`。
-4. 将目标 dot 通过 OAuth 连接到 `/mcp`，读取设备并建立 `phone.event` 订阅，确认订阅有有效期。
-5. **先只导入 Charging**。填写自己的完整 HTTPS `/ingest` 地址和原始设备 token（不加 `Bearer`，不带首尾空格），保存并重新打开核对。开启服务上传后手动运行一次，完成首次权限，并核对 Bridge 记录和 dot 回执。
-6. 手动通过后，启用 Charging 自动化，锁屏插入和拔出充电器各一次。随后按需加入 Focus On/Off 和一个通知来源，按[手机说明](docs/zh-CN/iphone-shortcuts.md)逐项确认。
+1. 从 [Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fzzaachaary%2Fdotlink) 在自己的 Cloudflare 账号创建独立 Worker，首次不填写变量和 Secrets。
+2. 打开新 Worker 的 `/setup`，选择语言，创建自己的 GitHub OAuth App，生成并私密保存设备凭据和封装密钥。
+3. 按[部署指南](docs/zh-CN/deployment.md)填写 **3 个变量和 4 个 Secrets**；保持 `ENABLE_INGEST=false`，确认 `/health` 返回 `200`。
+4. 只导入 **DotLink-Notifications**。保存完整 HTTPS `/ingest` 地址和不含 `Bearer`、首尾空白的原始设备 token。保持 Automation 关闭，选择一个允许来源并绑定 App/Title/Body；排除 ChatGPT、Codex 和快捷指令。
+5. 将目标 dot 通过 OAuth 连接到 `/mcp`，把[第六步提示词](docs/zh-CN/deployment.md#6-连接-dot验证通知送达)复制到接收聊天，建立仅包含 `iphone-primary` 和 `notification` 的 `phone.event` 订阅。
+6. 确认订阅后，开启服务上传及已配置的通知自动化。从选定来源产生无私人内容的新通知，核对最多三条不同新事件的回执；三条测试回复结束后保留持续订阅。
 
 同一首版源码来源的 Cloudflare Hosted Deploy、全新资源创建和 `/setup` 生成流程已于 2026-10-15 通过；那次新安装的 owner OAuth、dot 连接和手机触发尚未全部完成。另一个隔离实例已有真实 OAuth、订阅、合成事件和一次手机手动 Charging 成功记录；这些证据不能合并成一次完整新安装成功。
 
@@ -57,7 +55,6 @@ DotLink 面向一个所有者及其登记设备。历史手机测试使用 iOS 2
 ```mermaid
 flowchart LR
     A[选定 App 的新通知] --> C[iPhone 快捷指令]
-    B[充电或 Focus 变化] --> C
     C -->|HTTPS + 设备上传令牌| D[Cloudflare Worker]
     D --> E[SQLite Durable Object<br/>事件与待投递队列]
     E -->|MCP Events 签名回调| F[个人 dot]
@@ -73,7 +70,7 @@ flowchart LR
 | 内容 | 指南 |
 | --- | --- |
 | 浏览器设置与高级部署 | [部署指南](docs/zh-CN/deployment.md) |
-| 可选手机模块与手工恢复 | [iPhone 快捷指令](docs/zh-CN/iphone-shortcuts.md) |
+| 通知安装与故障排查 | [iPhone 快捷指令](docs/zh-CN/iphone-shortcuts.md) |
 | 数据流与权限 | [架构](docs/zh-CN/architecture.md) |
 | 第一版过程与历史边界 | [第一版实现](docs/zh-CN/first-version.md) |
 | 身份、网络、续期与交付 | [常见问题](docs/zh-CN/faq.md) |

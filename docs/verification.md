@@ -2,6 +2,8 @@
 
 [English](verification.md) | [简体中文](zh-CN/verification.md) · [Home](../README.md)
 
+**Current scope: Notifications only.** On 2026-10-20 the owner reported successful Notifications setup and said Charging was not working in the current setup. Charging, Focus On and Focus Off are **Coming soon**. Dated success below belongs to historical implementations and does not establish current support. No all-source or long-term reliability result is inferred from the owner feedback.
+
 ## Keep four checkpoints separate
 
 | Checkpoint | Proves | Does not prove |
@@ -31,7 +33,7 @@ These results come from personal-device development records through 2026-10-01. 
 
 Actual local check results are dated in the [validation record](validation-record.md). Old test counts are not current results.
 
-## Signed-template evidence and follow-ups
+## Historical signed-template evidence and follow-ups
 
 The four sanitized, signed templates first shipped in [Beta `v0.1.0-beta.1`](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0-beta.1) and retain the same bytes in [v0.1.0](https://github.com/zzaachaary/dotlink/releases/tag/v0.1.0). The regular release adds no new phone acceptance results. Their recorded evidence is narrower than the original personal workflow's history:
 
@@ -47,17 +49,17 @@ The four sanitized, signed templates first shipped in [Beta `v0.1.0-beta.1`](htt
 
 These remaining checks continue as disclosed follow-ups in v0.1.0; regular-release status does not mark them as passed. Cross-day renewal, network changes, and phone outbox behavior remain separate reliability items. A subscription deadline advancing is not proof of delivery beyond its original expiry; there is no implemented phone outbox. The [dated validation record](validation-record.md) retains the original checks and failures.
 
-## Minimum acceptance for a new installation
+## Minimum acceptance for a new notification installation
 
-Follow [deployment](deployment.md) once, repairing only the step that fails:
+Follow [deployment](deployment.md) once, repairing only the failed step:
 
-1. **Deploy and configure:** open the new Worker’s `/setup`; enter 3 variables and 4 Secrets; require `/health` `200` with ingestion disabled. Health checks minimum configuration, not every Secret.
-2. **Connect and subscribe:** complete owner OAuth in the target dot, read `iphone-primary`, and confirm a `phone.event` subscription and expiry.
-3. **Manual Charging first:** import only Charging, save the complete `/ingest` URL and raw token without `Bearer`, enable server ingestion, complete first-use permissions, and run once. Compare the new event’s time, battery and state; match the event ID when available and confirm the corresponding dot result.
-4. **Locked-screen Charging next:** enable the trigger and connect/disconnect once, confirming both actual true/false changes. A manual pass does not replace this step.
-5. **Optional modules:** toggle the same Focus mode on/off; then try one allowed notification source with rebound App/Title/Body, excluding ChatGPT, Codex and Shortcuts. Generate harmless new notification content and confirm its matching result.
+1. **Deploy and configure:** open the new Worker's `/setup`; enter 3 variables and 4 Secrets; require `/health` `200` with ingestion disabled. Health checks minimum configuration, not every Secret.
+2. **Configure Notifications:** import only `DotLink-Notifications`, save the complete `/ingest` URL and raw token without `Bearer`, select one allowed source, and bind App/Title/Body. Exclude ChatGPT, Codex and Shortcuts. Keep Automation off until the subscription is confirmed.
+3. **Connect and subscribe:** complete owner OAuth, then copy the [Step 6 prompt](deployment.md#6-connect-your-dot-and-verify-notifications) into the target chat. Confirm the actual device, matching notification subscription and expiry. A tool connection alone is not an event subscription.
+4. **Generate real new notifications:** enable ingestion and the configured automation, complete first-use permissions and trigger harmless source notifications. Match up to three distinct `data.event_id` values with automatic dot acknowledgements, including source, event time and permitted summary.
+5. **Continue after the test:** stop the three-event test replies while retaining the subscription. Confirm the client's actual renewal capability; do not substitute polling or promises for MCP Events. Expand sources only after separate checks.
 
-Passing your selected modules establishes basic use for that installation. Record first and repeated runs separately. Once dot automatically produces a matching result, do not repeatedly test solely because the platform does not expose a webhook-to-task-run ID. Asking dot to query history establishes reading/processing, but cannot by itself prove automatic wake-up.
+Editor execution without notification input is not a trigger test. Old records, manual history queries and duplicate pushes must not count as new notifications. Passing selected sources establishes only that installation's observed behavior; if an automatically received event cannot be uniquely matched, record the uncertainty rather than guessing.
 
 ## Follow-up reliability and permission checks
 

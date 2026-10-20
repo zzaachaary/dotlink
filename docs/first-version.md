@@ -2,6 +2,8 @@
 
 [English](first-version.md) | [简体中文](zh-CN/first-version.md) · [Home](../README.md)
 
+**Historical implementation record. Current installation supports Notifications only. Charging, Focus On and Focus Off are Coming soon; older results and attachments are not current support claims. Follow the [notification deployment guide](deployment.md) for installation.**
+
 Compiled on 2026-10-02; historical phone evidence runs through 2026-10-01. This is not a new end-to-end test report. `https://example.com`, `demo-phone`, `Example App`, and `Work` are synthetic examples, not production settings. The project is now named DotLink; the original record and copyright notice are retained.
 
 The first version combined Shortcuts collection, Cloudflare Worker ingress, SQLite Durable Object storage, OAuth-protected MCP tools, and MCP Events delivery. It first established an understandable, revocable personal event path, before improving installation and recovery.
@@ -21,7 +23,7 @@ The first version combined Shortcuts collection, Cloudflare Worker ingress, SQLi
 
 Historical unit/SQLite and workerd checks preceded later test changes. Do not treat their counts as current. Run the relevant checks for a changed version and record actual output.
 
-## Minimum server setup sequence
+## Historical server setup sequence
 
 1. Deploy on your own Cloudflare resources with an HTTPS origin, GitHub OAuth App, and owner identity. An example origin is `https://example.com`; callback is `/callback` under the configured authorization origin.
 2. Put GitHub OAuth credentials, the random subscription-key sealing key, and device registry in Worker Secrets. Store only upload-token digests in the registry; the phone keeps its independent raw token.
@@ -32,7 +34,7 @@ Historical unit/SQLite and workerd checks preceded later test changes. Do not tr
 
 The current browser guide uses `/setup` and dashboard configuration; the [deployment guide](deployment.md) retains the original CLI procedure for advanced use and recovery. This addition does not rewrite the historical evidence above.
 
-## Reproducing the Shortcuts structure
+## Historical Shortcuts structure
 
 The first version separated HTTP upload, event wrapping, and source triggers, reducing repeated HTTP setup. Names below describe roles rather than required shortcut names.
 
@@ -73,11 +75,9 @@ Read the actual app dynamically. Do not leave an empty “title contains” cond
 
 Use system-provided automatic execution options and complete first-use permissions. Exclude ChatGPT/Codex and Shortcuts notifications to reduce reply loops; complete loop prevention was not implemented. An empty app list does not mean all apps, and future app inclusion is unverified. [Apple notification triggers](https://support.apple.com/en-ke/guide/shortcuts/apd932ff833f/ios).
 
-### Charging and Focus
+### Charging and Focus: Coming soon
 
-At charger connection/disconnection, read battery and charging state into `device_status`, recording the real `payload.measured_at`. The server maintains each field's newest observation separately, without inventing defaults for uncollected fields.
-
-Use separate Focus on/off triggers. Each passes its explicit mode name, such as `Work`, and native Boolean `active:true` or `active:false`; the shared sender adds `measured_at`. This avoids guessing the prior name after a mode has turned off. Both directions require real toggle tests. [Apple setting triggers](https://support.apple.com/en-ke/guide/shortcuts/apde31e9638b/ios).
+The original personal implementation recorded charger changes and selected Focus transitions. Those dated results are retained in [verification](verification.md) and the [validation record](validation-record.md); they do not establish current support. The current public installation path does not install or test Charging, Focus On or Focus Off.
 
 ## Concrete implementation limits
 
@@ -110,6 +110,6 @@ npm run check
 
 `npm run check` is a Wrangler dry-run bundle, not deployment. Runtime tests use workerd and may encounter process/network sandbox restrictions. Neither replaces phone testing.
 
-End-to-end acceptance needs a real notification from a selected app, lock-screen charger connection/disconnection, and Focus on/off. Record triggering, persistence, webhook ACK, and the target dot's response separately. Offline/recovery, reboot, expiry, duplicates, bursts, and revocation need further checks before broader reliability claims.
+Current acceptance needs real notifications from each selected source. Record triggering, persistence, webhook acknowledgement and matching automatic dot output separately. Start with the three-event test in [deployment Step 6](deployment.md#6-connect-your-dot-and-verify-notifications). Offline/recovery, reboot, expiry, duplicates, bursts and revocation require separate checks before broader reliability claims.
 
 Phone outbox, automatic replay, original notification dates, automatic future-app coverage, and long-term unattended operation remain unimplemented or incompletely evidenced. See the [roadmap](roadmap.md).

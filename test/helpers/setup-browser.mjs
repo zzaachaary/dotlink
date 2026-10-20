@@ -18,20 +18,22 @@ export function setupBrowser(script, { exposeApi = false, clipboardAvailable = t
   }
   for (const id of ['status', 'seal-key', 'device-token', 'device-registry', 'fresh-install', 'generate', 'public-origin',
     'callback-url', 'mcp-url', 'mcp-fresh-url', 'ingest-url', 'credentials', 'fresh-path', 'existing-path', 'insecure',
-    'guide-notifications', 'guide-battery', 'guide-focus', 'owner-github-id', 'github-client-id',
+    'guide-notifications', 'owner-github-id', 'github-client-id',
     'config-origin', 'config-owner-id', 'config-ingest', 'config-client-id', 'config-seal-key', 'config-registry']) element(id);
+  const prompt = element('subscription-prompt', { valueEn: 'Subscribe to notifications.\nEnglish prompt.', valueZh: '订阅通知。\n中文提示词。' });
+  prompt.hidden = false;
   const fields = ['seal-key', 'device-token', 'device-registry', 'config-seal-key', 'config-registry'];
-  const copyFields = [...fields, 'config-origin', 'config-owner-id', 'config-ingest', 'config-client-id'];
+  const copyFields = [...fields, 'config-origin', 'config-owner-id', 'config-ingest', 'config-client-id', 'subscription-prompt'];
   const placeholder = elements.get('owner-github-id');
   Object.assign(placeholder.dataset, { placeholderEn: 'Your numeric GitHub ID', placeholderZh: '你的 GitHub 数字 ID' });
   const groups = {
     '[data-language]': ['en', 'zh-CN'].map(language => element('', { language })),
     '[data-mode]': ['fresh', 'existing'].map(mode => element('', { mode })),
-    '[data-module]': ['notifications', 'battery', 'focus'].map(module => element('', { module })),
     '[data-reveal]': fields.map(reveal => element('', { reveal })),
     '[data-copy]': copyFields.map(copy => element('', { copy })),
     '[data-mask]': fields.map(mask => element('', { mask })),
     '[data-en]': [],
+    '[data-value-en]': [prompt],
     '[data-placeholder-en]': [placeholder],
     '[data-aria-label-en]': [element('', { ariaLabelEn: 'Setup navigation', ariaLabelZh: '设置导航' })],
     '[data-config-pending]': [element(''), element('')],
